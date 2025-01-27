@@ -3,7 +3,7 @@ import { FaLaptopCode, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 
 const FeatureSection = () => {
   return (
-    <div className="flex justify-center items-center mx-auto bg-[#4D2C5E] p-4 w-full max-w-6xl rounded-lg">
+    <div className="flex justify-center items-center mx-auto bg-[#4D2C5E] p-4 w-full max-w-6xl rounded-lg mt-10">
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
         {/* Feature 1 */}
         <div className="flex-1 p-4 rounded-lg text-white flex flex-col items-center">

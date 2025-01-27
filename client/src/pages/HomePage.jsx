@@ -6,6 +6,7 @@ import LearningExperience from "../components/LearningExperience";
 import RoadmapSection from "../components/WebDevelopment";
 import DSAComponent from "../components/DSA";
 import NewsLetter from '../components/NewsLetter'
+import Footer from "../components/Footer";
 
 const webTechnologies = [
   { name: "JavaScript", icon: "FaJava" },
@@ -44,6 +45,7 @@ const HomePage = () => {
       />
       <DSAComponent />
       <NewsLetter />
+      <Footer />
     </div>
   );
 };

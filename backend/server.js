@@ -6,7 +6,6 @@ import { connectToDb } from "./src/config/db.js";
 import redisClient from "./src/config/redis.js";
 import cookieParser from "cookie-parser";
 
-
 dotnev.config();
 connectToDb();
 // Check Redis connection status
@@ -23,10 +22,12 @@ app.use(cookieParser());
 
 // Routes
 import userRoutes from "./src/routes/user.routes.js";
-import dsaProblemRoutes from './src/routes/dsaproblem.routes.js'
+import dsaProblemRoutes from "./src/routes/dsaproblem.routes.js";
+import categoryRoutes from "./src/routes/category.routes.js";
 
 app.use("/api/user", userRoutes);
-app.use('/api/dsa', dsaProblemRoutes)
+app.use("/api/dsa", dsaProblemRoutes);
+app.use("/api/category", categoryRoutes);
 
 // Default route
 app.get("/", (req, res) => {

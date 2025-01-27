@@ -4,6 +4,8 @@ import dotnev from "dotenv";
 import cors from "cors";
 import { connectToDb } from "./src/config/db.js";
 import redisClient from "./src/config/redis.js";
+import cookieParser from "cookie-parser";
+
 
 dotnev.config();
 connectToDb();
@@ -17,11 +19,16 @@ const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors());
+app.use(cookieParser());
 
 // Routes
 import userRoutes from "./src/routes/user.routes.js";
-app.use("/api/user", userRoutes);
+import dsaProblemRoutes from './src/routes/dsaproblem.routes.js'
 
+app.use("/api/user", userRoutes);
+app.use('/api/dsa', dsaProblemRoutes)
+
+// Default route
 app.get("/", (req, res) => {
   res.send("Welcome to Study Platform API!");
 });

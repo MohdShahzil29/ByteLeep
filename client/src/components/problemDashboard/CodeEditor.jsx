@@ -1,34 +1,73 @@
-import React from "react";
+import React, { useState } from "react";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/theme-github";
 import { FaPlay, FaCog, FaCheck } from "react-icons/fa";
 
+// Language configuration
+const languages = [
+  {
+    name: "Java",
+    mode: "java",
+    template: `class Solution {\n  public static void main(String[] args) {\n    // Your code here\n  }\n}`,
+  },
+  {
+    name: "Python",
+    mode: "python",
+    template: `def solution():\n    # Your code here\n    pass\n`,
+  },
+  {
+    name: "C++",
+    mode: "c_cpp",
+    template: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}`,
+  },
+];
+
 const CodeEditor = () => {
-  const code = `class Solution {
-  static ArrayList<Integer> subarraySum(int[] arr, int target) {
-    // code here
-  }
-}`;
+  const [language, setLanguage] = useState(languages[0]); // Default to Java
+  const [code, setCode] = useState(language.template);
+
+  const handleLanguageChange = (e) => {
+    const selectedLanguage = languages.find(
+      (lang) => lang.name === e.target.value
+    );
+    setLanguage(selectedLanguage);
+    setCode(selectedLanguage.template); // Reset editor with template code
+  };
+
+  const handleCodeChange = (newCode) => setCode(newCode);
 
   return (
     <div className="flex flex-col flex-grow h-screen overflow-hidden">
       <header className="flex items-center justify-between p-4 bg-gray-800 text-white">
         <div className="flex items-center">
-          <span className="mr-2">// </span>
-          <span className="font-bold">Driver Code Ends</span>
+          <span className="font-bold text-lg">Online Compiler</span>
         </div>
         <div className="flex items-center">
-          <FaCog className="mr-2 cursor-pointer" />
+          <select
+            value={language.name}
+            onChange={handleLanguageChange}
+            className="bg-gray-700 text-white p-2 rounded"
+          >
+            {languages.map((lang) => (
+              <option key={lang.name} value={lang.name}>
+                {lang.name}
+              </option>
+            ))}
+          </select>
+          <FaCog className="ml-4 cursor-pointer" />
         </div>
       </header>
 
       <div className="flex-grow p-4 bg-gray-100 overflow-auto">
         <AceEditor
-          mode="java"
+          mode={language.mode}
           theme="github"
           name="code-editor"
           value={code}
+          onChange={handleCodeChange}
           editorProps={{ $blockScrolling: true }}
           setOptions={{ useWorker: false }}
           width="100%"

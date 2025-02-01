@@ -5,8 +5,8 @@ import HomePage from "./pages/HomePage";
 import ProblemDashboard from "./pages/ProblemDashboard";
 import RegisterForm from "./pages/auth/RegisterForm";
 import LoginForm from "./pages/auth/LoginForm";
-// import Profile from "./pages/Profile";
 import ProfilePage from "./pages/Profile";
+import FloatingButton from "./components/FloatingButton";
 
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
-
+      <FloatingButton />
       {/* <Footer /> */}
     </>
   );

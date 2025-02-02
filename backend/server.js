@@ -1,20 +1,19 @@
 import express from "express";
 import morgan from "morgan";
-import dotnev from "dotenv";
+import dotenv from "dotenv";
 import cors from "cors";
 import { connectToDb } from "./src/config/db.js";
 import redisClient from "./src/config/redis.js";
 import cookieParser from "cookie-parser";
 
-dotnev.config();
+dotenv.config();
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 connectToDb();
-// Check Redis connection status
+
 redisClient.on("connect", () => {
   console.log("Redis client connected");
 });
@@ -52,12 +51,10 @@ app.use("/api/user", userRoutes);
 app.use("/api/dsa", dsaProblemRoutes);
 app.use("/api/category", categoryRoutes);
 
-// Default route
 app.get("/", (req, res) => {
   res.send("Welcome to Study Platform API!");
 });
 
-// Start the server
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => {

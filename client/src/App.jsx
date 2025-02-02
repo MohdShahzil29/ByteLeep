@@ -15,7 +15,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/problem" element={<ProblemDashboard />} />
+        <Route path="/problem/:slug" element={<ProblemDashboard />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/profile" element={<ProfilePage />} />

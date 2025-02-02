@@ -56,6 +56,11 @@ const dsaProblemSchema = new Schema(
       ref: "Category",
       required: true,
     },
+    driveCode: {
+      java: String,
+      python: String,
+      cpp: String,
+    },
     slug: {
       type: String,
       unqiue: true,

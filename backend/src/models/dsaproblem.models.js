@@ -28,11 +28,11 @@ const dsaProblemSchema = new Schema(
       required: true,
     },
     input: {
-      type: [String],
+      type: [Schema.Types.Mixed], 
       required: true,
     },
     output: {
-      type: [String],
+      type: [Schema.Types.Mixed], 
       required: true,
     },
     shortExplanation: {
@@ -52,7 +52,7 @@ const dsaProblemSchema = new Schema(
       required: true,
     },
     category: {
-      type: mongoose.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,
     },
@@ -61,9 +61,24 @@ const dsaProblemSchema = new Schema(
       python: String,
       cpp: String,
     },
+    userFunction: {
+      java: String,
+      python: String,
+      cpp: String,
+    },
     slug: {
       type: String,
-      unqiue: true,
+      unique: true,
+    },
+    testCases: [
+      {
+        input: [Schema.Types.Mixed],
+        output: [Schema.Types.Mixed],
+      },
+    ],
+    expectedTimeSpaceComplexity: {
+      timeComplexity: String,
+      spaceComplexity: String,
     },
   },
   {

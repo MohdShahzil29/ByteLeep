@@ -7,6 +7,7 @@ import RegisterForm from "./pages/auth/RegisterForm";
 import LoginForm from "./pages/auth/LoginForm";
 import ProfilePage from "./pages/Profile";
 import FloatingButton from "./components/FloatingButton";
+import Tutorial from "./pages/tutorial/Tutorial";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/problem/:slug" element={<ProblemDashboard />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/tutorial" element={<Tutorial />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
       <FloatingButton />

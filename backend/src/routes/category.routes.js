@@ -6,8 +6,8 @@ const app = express.Router();
 
 app.post(
   "/create-category",
-  authenticateUser,
-  isAdmin,
+  // authenticateUser,
+  // isAdmin,
   createCategoryController
 );
 

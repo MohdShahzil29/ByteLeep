@@ -5,6 +5,7 @@ import cors from "cors";
 import { connectToDb } from "./src/config/db.js";
 import redisClient from "./src/config/redis.js";
 import cookieParser from "cookie-parser";
+import executeCode from "./src/utils/executeCode.js";
 
 dotenv.config();
 
@@ -46,6 +47,30 @@ app.post("/api/gemini", async (req, res) => {
       .json({ error: "Failed to generate content from Gemini" });
   }
 });
+
+// 🔹 API to Execute Code
+app.post("/api/execute", async (req, res) => {
+  try {
+    const { language, code } = req.body;
+    
+    console.log("Received request to execute code"); // Debugging
+    console.log("Language:", language);
+    console.log("Code:", code);
+
+    if (!language || !code) {
+      return res.status(400).json({ error: "Language and code are required" });
+    }
+
+    const output = await executeCode(language, code);
+
+    console.log("Execution Output:", output); // Debugging
+    res.json({ output });
+  } catch (error) {
+    console.error("Execution Error:", error); // Debugging
+    res.status(500).json({ error: error.toString() });
+  }
+});
+
 
 app.use("/api/user", userRoutes);
 app.use("/api/dsa", dsaProblemRoutes);

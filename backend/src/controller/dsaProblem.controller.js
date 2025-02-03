@@ -118,3 +118,39 @@ export const deleteProblem = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// Get input for a problem by slug
+export const getProblemInputBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    // Check Redis cache first
+    const cachedInput = await redisClient.get(`problem:input:${slug}`);
+    if (cachedInput) {
+      return res.status(200).json({ input: JSON.parse(cachedInput) });
+    }
+
+    // Fetch problem from database
+    const problem = await DsaProblem.findOne({ slug });
+    if (!problem) {
+      return res.status(404).json({ message: "Problem not found" });
+    }
+
+    // Ensure input exists
+    if (!problem.input || problem.input.length === 0) {
+      return res.status(400).json({ message: "No input data available" });
+    }
+
+    // Store input in cache for quick access
+    await redisClient.set(
+      `problem:input:${slug}`,
+      JSON.stringify(problem.input),
+      "EX",
+      3600 // Cache for 1 hour
+    );
+
+    res.status(200).json({ input: problem.input });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

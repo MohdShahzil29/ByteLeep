@@ -6,6 +6,7 @@ import {
   getAllProblems,
   updateProblem,
   deleteProblem,
+  getProblemInputBySlug,
 } from "../controller/dsaProblem.controller.js";
 import { isAdmin, authenticateUser } from "../middlewares/Auth.js";
 
@@ -29,8 +30,8 @@ const problemValidation = [
 
 router.post(
   "/create",
-  authenticateUser,
-  isAdmin,
+  // authenticateUser,
+  // isAdmin,
   problemValidation,
   createProblem
 );
@@ -44,5 +45,6 @@ router.put(
   updateProblem
 );
 router.delete("/delete/:id", deleteProblem);
+router.get("/get-input/:slug", getProblemInputBySlug);
 
 export default router;

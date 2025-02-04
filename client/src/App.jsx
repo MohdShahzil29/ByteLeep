@@ -8,6 +8,8 @@ import LoginForm from "./pages/auth/LoginForm";
 import ProfilePage from "./pages/Profile";
 import FloatingButton from "./components/FloatingButton";
 import Tutorial from "./pages/tutorial/Tutorial";
+import Compiler from "./pages/Compiler";
+import Executor from "./components/compiler/codeexecutor/Executor";
 
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/problem/:slug" element={<ProblemDashboard />} />
+        <Route path="/compiler" element={<Compiler />} />
+        <Route path="/online-compiler/:slug" element={<Executor />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/tutorial" element={<Tutorial />} />

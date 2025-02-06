@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import {
   FaPython,
   FaJava,
@@ -16,10 +17,8 @@ const CompilerList = () => {
   const icons = [
     { name: "C", icon: SiC, color: "text-blue-500" },
     { name: "C++", icon: SiCplusplus, color: "text-blue-700" },
-    // Removed the C# icon as it is not available
     { name: "Java", icon: FaJava, color: "text-orange-500" },
     { name: "Python", icon: FaPython, color: "text-blue-500" },
-    // { name: "JavaScript", icon: FaJsSquare, color: "text-yellow-400" },
     { name: "PHP", icon: FaPhp, color: "text-purple-600" },
     { name: "Web Development", icon: FaHtml5, color: "text-orange-600" },
     { name: "Go-lang", icon: FaGolang, color: "text-blue-500" },
@@ -34,8 +33,12 @@ const CompilerList = () => {
           key={index}
           className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
         >
-          <item.icon className={`text-4xl ${item.color}`} />
-          <p className="mt-2 text-gray-700">{item.name}</p>
+          <Link to={`/online-compiler/${item.name}`}>
+            {" "}
+            {/* Add the Link to navigate */}
+            <item.icon className={`text-4xl ${item.color}`} />
+            <p className="mt-2 text-gray-700">{item.name}</p>
+          </Link>
         </div>
       ))}
     </div>

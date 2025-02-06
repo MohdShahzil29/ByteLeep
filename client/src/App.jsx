@@ -20,7 +20,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/problem/:slug" element={<ProblemDashboard />} />
         <Route path="/compiler" element={<Compiler />} />
-        <Route path="/online-compiler/:slug" element={<Executor />} />
+        <Route path="/online-compiler/:language" element={<Executor />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/tutorial" element={<Tutorial />} />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaPlay } from "react-icons/fa";
+import { useParams } from "react-router-dom"; // To access the language from the URL
 import axios from "axios";
 
 const welcomeCodes = {
@@ -15,19 +16,25 @@ const welcomeCodes = {
 };
 
 const RightCodeEditor = ({ selectedLanguage }) => {
-  const [code, setCode] = useState(welcomeCodes[selectedLanguage]);
+  const { language } = useParams();
+  const [code, setCode] = useState(welcomeCodes[language] || "");
   const [output, setOutput] = useState("");
 
+  const currentLanguage = selectedLanguage || language;
+
   useEffect(() => {
-    setCode(welcomeCodes[selectedLanguage]);
-  }, [selectedLanguage]);
+    setCode(welcomeCodes[currentLanguage]);
+  }, [currentLanguage]);
 
   const handleRun = async () => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/run-code`, {
-        language: selectedLanguage,
-        code: code,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/run-code`,
+        {
+          language: currentLanguage,
+          code: code,
+        }
+      );
       setOutput(response.data.output);
     } catch (error) {
       setOutput(
@@ -38,14 +45,13 @@ const RightCodeEditor = ({ selectedLanguage }) => {
 
   return (
     <div className="flex flex-col md:flex-row flex-1 mt-10 gap-4">
-      {/* Code Editor Section */}
       <div className="w-full md:w-1/2 bg-white shadow-lg rounded-lg overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
           <span className="text-lg font-semibold">
             Main.
-            {selectedLanguage === "Java"
+            {currentLanguage === "Java"
               ? "java"
-              : selectedLanguage.toLowerCase()}
+              : currentLanguage.toLowerCase()}
           </span>
         </div>
         <div className="p-4 flex-1 min-h-[200px]">
@@ -67,13 +73,12 @@ const RightCodeEditor = ({ selectedLanguage }) => {
         </div>
       </div>
 
-      {/* Output Section */}
       <div className="w-full md:w-1/2 bg-white shadow-lg rounded-lg overflow-hidden p-4 flex flex-col min-h-[200px]">
         <div className="mb-4">
           <span className="text-lg font-semibold">Output</span>
         </div>
         <div className="p-4 border rounded-lg h-full overflow-y-auto flex-1">
-          {output}
+          <pre className="whitespace-pre-wrap">{output}</pre>
         </div>
       </div>
     </div>

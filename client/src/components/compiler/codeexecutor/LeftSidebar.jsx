@@ -1,29 +1,28 @@
 import React from "react";
 import {
   FaPython,
-  FaReact,
-  FaDatabase,
-  FaHtml5,
-  FaCss3Alt,
+  FaJava,
   FaJsSquare,
-  FaNodeJs,
+  FaHtml5,
+  FaCss3,
   FaPhp,
   FaSwift,
-  FaAngular,
+  FaRust,
 } from "react-icons/fa";
+import { SiC, SiCplusplus } from "react-icons/si";
+import { FaGolang } from "react-icons/fa6";
 
-const LeftSidebar = () => {
+const LeftSidebar = ({ onLanguageSelect }) => {
   const icons = [
+    { name: "C", icon: SiC },
+    { name: "C++", icon: SiCplusplus },
+    { name: "Java", icon: FaJava },
     { name: "Python", icon: FaPython },
-    { name: "React", icon: FaReact },
-    { name: "Database", icon: FaDatabase },
-    { name: "HTML5", icon: FaHtml5 },
-    { name: "CSS3", icon: FaCss3Alt },
-    { name: "JavaScript", icon: FaJsSquare },
-    { name: "Node.js", icon: FaNodeJs },
     { name: "PHP", icon: FaPhp },
+    { name: "Web Dev", icon: FaHtml5 },
+    { name: "Go-lang", icon: FaGolang },
     { name: "Swift", icon: FaSwift },
-    { name: "Angular", icon: FaAngular },
+    { name: "Rust", icon: FaRust },
   ];
 
   return (
@@ -34,6 +33,7 @@ const LeftSidebar = () => {
           {icons.map((item, index) => (
             <div
               key={index}
+              onClick={() => onLanguageSelect(item.name)}
               className="flex flex-col items-center p-2 bg-[#FDF8EE] text-black rounded-lg hover:bg-yellow-200 transition duration-300 cursor-pointer w-[90px] mt-3"
             >
               <item.icon className="text-2xl mb-1" />
@@ -48,6 +48,7 @@ const LeftSidebar = () => {
             {icons.map((item, index) => (
               <div
                 key={index}
+                onClick={() => onLanguageSelect(item.name)}
                 className="flex flex-col items-center p-2 bg-[#FDF8EE] text-black rounded-lg hover:bg-yellow-200 transition duration-300 cursor-pointer w-[90px] min-w-[90px]"
               >
                 <item.icon className="text-2xl mb-1" />

@@ -10,7 +10,7 @@ import {
   FaRust,
 } from "react-icons/fa";
 import { SiC, SiCplusplus } from "react-icons/si";
-// Removed: import { SiCsharp } from "react-icons/si";
+import { FaGolang } from "react-icons/fa6";
 
 const CompilerList = () => {
   const icons = [
@@ -19,10 +19,10 @@ const CompilerList = () => {
     // Removed the C# icon as it is not available
     { name: "Java", icon: FaJava, color: "text-orange-500" },
     { name: "Python", icon: FaPython, color: "text-blue-500" },
-    { name: "JavaScript", icon: FaJsSquare, color: "text-yellow-400" },
+    // { name: "JavaScript", icon: FaJsSquare, color: "text-yellow-400" },
     { name: "PHP", icon: FaPhp, color: "text-purple-600" },
-    { name: "HTML", icon: FaHtml5, color: "text-orange-600" },
-    { name: "CSS", icon: FaCss3, color: "text-blue-500" },
+    { name: "Web Development", icon: FaHtml5, color: "text-orange-600" },
+    { name: "Go-lang", icon: FaGolang, color: "text-blue-500" },
     { name: "Swift", icon: FaSwift, color: "text-orange-500" },
     { name: "Rust", icon: FaRust, color: "text-orange-500" },
   ];

@@ -7,6 +7,11 @@ import redisClient from "./src/config/redis.js";
 import cookieParser from "cookie-parser";
 import executeCode from "./src/utils/executeCode.js";
 
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -52,7 +57,7 @@ app.post("/api/gemini", async (req, res) => {
 app.post("/api/execute", async (req, res) => {
   try {
     const { language, code } = req.body;
-    
+
     console.log("Received request to execute code"); // Debugging
     console.log("Language:", language);
     console.log("Code:", code);
@@ -71,6 +76,70 @@ app.post("/api/execute", async (req, res) => {
   }
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const languages = {
+  Java: "java",
+  Python: "python3",
+  C: "gcc",
+  "C++": "g++",
+  PHP: "php",
+  "Go-lang": "go",
+  Swift: "swift",
+  Rust: "rustc",
+};
+
+app.post("/api/run-code", (req, res) => {
+  const { language, code } = req.body;
+
+  if (
+    !languages[language] &&
+    !["Java", "C", "C++", "Go-lang", "Swift", "Rust"].includes(language)
+  ) {
+    return res.status(400).json({ error: "Language not supported" });
+  }
+
+  const filePath = path.join(
+    __dirname,
+    "temp",
+    language === "Java" ? "Main.java" : `temp.${language.toLowerCase()}`
+  );
+  const outputPath = path.join(__dirname, "temp", "output.txt");
+
+  // Ensure the temp directory exists
+  if (!fs.existsSync(path.join(__dirname, "temp"))) {
+    fs.mkdirSync(path.join(__dirname, "temp"));
+  }
+
+  // Write the code to a temporary file
+  fs.writeFileSync(filePath, code);
+
+  let command;
+  if (language === "Java") {
+    command = `javac ${filePath} && java -cp ${__dirname}/temp Main`;
+  } else if (language === "C") {
+    command = `gcc ${filePath} -o temp/output && temp/output`;
+  } else if (language === "C++") {
+    command = `g++ ${filePath} -o temp/output && temp/output`;
+  } else if (language === "Go-lang") {
+    command = `go run ${filePath}`;
+  } else if (language === "Swift") {
+    command = `swift ${filePath}`;
+  } else if (language === "Rust") {
+    command = `rustc ${filePath} && ./temp/temp`;
+  } else {
+    command = `${languages[language]} ${filePath}`;
+  }
+
+  // Execute the command
+  exec(command, { cwd: __dirname }, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ output: stdout });
+  });
+});
 
 app.use("/api/user", userRoutes);
 app.use("/api/dsa", dsaProblemRoutes);

@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import LeftSidebar from "./LeftSidebar";
 import RightCodeEditor from "./RightCodeEditor";
-import Footer from '../../Footer'
+import Footer from "../../Footer";
 
 const Executor = () => {
+  const [selectedLanguage, setSelectedLanguage] = useState("Java");
+
   return (
     <div>
-    <div className="flex justify-between">
-      <LeftSidebar />
-      <RightCodeEditor />
-    </div>
-    <Footer />
+      <div className="flex justify-between">
+        <LeftSidebar onLanguageSelect={setSelectedLanguage} />
+        <RightCodeEditor selectedLanguage={selectedLanguage} />
+      </div>
+      <Footer />
     </div>
   );
 };

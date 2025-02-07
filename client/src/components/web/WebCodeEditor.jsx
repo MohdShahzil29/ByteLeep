@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FaHtml5, FaCss3Alt, FaJs, FaPlay, FaTerminal } from "react-icons/fa";
+import {
+  FaHtml5,
+  FaCss3Alt,
+  FaJs,
+  FaPlay,
+  FaTerminal,
+  FaMoon,
+  FaSun,
+} from "react-icons/fa";
 import * as esprima from "esprima";
 
 const WebCodeEditor = () => {
@@ -8,6 +16,7 @@ const WebCodeEditor = () => {
   const [js, setJs] = useState("console.log('Hello from JavaScript!');");
   const [consoleOutput, setConsoleOutput] = useState("");
   const [srcDoc, setSrcDoc] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false); 
 
   const handleRunClick = () => {
     let errorMessage = "";
@@ -75,11 +84,28 @@ const WebCodeEditor = () => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode) => !prevMode);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white p-4">
+    <div
+      className={`flex flex-col min-h-screen p-4 ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+      }`}
+    >
       <h1 className="text-2xl font-bold text-center">
         Byte Leep Web Code Editor
       </h1>
+
+      {/* Dark Mode Toggle Button */}
+      <button
+        onClick={toggleDarkMode}
+        className="mt-4 px-4 py-2 bg-blue-600 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-500 w-full md:w-auto mx-auto"
+      >
+        {isDarkMode ? <FaSun /> : <FaMoon />}
+        {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      </button>
 
       {/* Responsive Grid for Editors */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -88,18 +114,21 @@ const WebCodeEditor = () => {
           icon={<FaHtml5 />}
           value={html}
           onChange={setHtml}
+          isDarkMode={isDarkMode}
         />
         <Editor
           language="CSS"
           icon={<FaCss3Alt />}
           value={css}
           onChange={setCss}
+          isDarkMode={isDarkMode}
         />
         <Editor
           language="JavaScript"
           icon={<FaJs />}
           value={js}
           onChange={setJs}
+          isDarkMode={isDarkMode}
         />
       </div>
 
@@ -118,7 +147,13 @@ const WebCodeEditor = () => {
           className="w-full h-60 md:h-96 border border-gray-700 rounded-lg"
         ></iframe>
 
-        <div className="bg-black text-green-400 p-4 h-60 md:h-96 border border-gray-700 rounded-lg overflow-auto">
+        <div
+          className={`p-4 h-60 md:h-96 border rounded-lg overflow-auto ${
+            isDarkMode
+              ? "bg-black text-green-400 border-gray-700"
+              : "bg-gray-100 text-black border-gray-300"
+          }`}
+        >
           <h2 className="text-lg flex items-center gap-2 mb-2">
             <FaTerminal /> Console Output
           </h2>
@@ -129,14 +164,22 @@ const WebCodeEditor = () => {
   );
 };
 
-const Editor = ({ language, icon, value, onChange }) => {
+const Editor = ({ language, icon, value, onChange, isDarkMode }) => {
   return (
-    <div className="flex flex-col bg-gray-800 p-4 rounded-lg shadow-lg">
+    <div
+      className={`flex flex-col p-4 rounded-lg shadow-lg ${
+        isDarkMode ? "bg-gray-800" : "bg-gray-200"
+      }`}
+    >
       <h2 className="text-lg flex items-center gap-2 mb-2">
         {icon} {language}
       </h2>
       <textarea
-        className="w-full h-32 md:h-48 p-2 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`w-full h-32 md:h-48 p-2 rounded-md focus:outline-none focus:ring-2 ${
+          isDarkMode
+            ? "bg-gray-900 text-white border-gray-700 focus:ring-blue-500"
+            : "bg-white text-black border-gray-300 focus:ring-blue-300"
+        }`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

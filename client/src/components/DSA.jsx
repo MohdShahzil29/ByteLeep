@@ -14,7 +14,7 @@ const topics = [
 
 const DSAComponent = () => {
   return (
-    <div className="container mx-auto p-6 text-center">
+    <div className="container mx-auto p-6 text-center mt-10">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         Data Structures & Algorithms
       </h1>
@@ -23,7 +23,7 @@ const DSAComponent = () => {
           <Card key={index} name={topic.name} />
         ))}
       </div>
-      <button className="text-white bg-gray-800 px-6 py-3 rounded hover:bg-gray-700 transition duration-300">
+      <button className="text-white bg-gray-800 px-6 py-3 rounded hover:bg-gray-700 transition duration-300 cursor-pointer">
         View All
       </button>
     </div>
@@ -33,8 +33,8 @@ const DSAComponent = () => {
 const Card = ({ name }) => {
   return (
     <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg flex justify-between items-center hover:from-blue-600 hover:to-blue-700 transition duration-300 transform hover:scale-105">
-      <span className="truncate font-medium text-lg">{name}</span>
-      <FaArrowRight className="text-2xl" />
+      <span className="truncate font-medium text-lg cursor-pointer">{name}</span>
+      <FaArrowRight className="text-2xl cursor-pointer" />
     </div>
   );
 };

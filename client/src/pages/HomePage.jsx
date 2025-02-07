@@ -33,7 +33,7 @@ const HomePage = () => {
       <FeatureSection />
       <Sheet />
       <LearningExperience />
-      <RoadmapSection
+      {/* <RoadmapSection
         title="Web Development"
         items={webTechnologies}
         buttonLabel="View All"
@@ -42,7 +42,7 @@ const HomePage = () => {
         title="Roadmap"
         items={roadmapItems}
         buttonLabel="View All"
-      />
+      /> */}
       <DSAComponent />
       <NewsLetter />
       <Footer />

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import logo from "../assets/logo.png";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import mainLogo from '../assets/mainlogo.png'
+import mainLogo from '../assets/orignallogo.png'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +15,8 @@ const Navbar = () => {
     <nav className="bg-[#FDF8EE] text-black">
       <div className="max-w-[90rem] mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <img src={logo} alt="Logo" className="h-10 mr-4" />
-          <h1 className="text-2xl font-bold">Study Platform</h1>
+          <img src={mainLogo} alt="Logo" className="h-14 mr-4" />
+          {/* <h1 className="text-2xl font-bold">Study Platform</h1> */}
         </div>
         <div className="hidden md:flex items-center">
           <a href="/" className="px-4 py-2 hover:text-purple-500">

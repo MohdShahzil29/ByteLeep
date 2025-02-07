@@ -32,6 +32,9 @@ const CodeEditor = () => {
   const [theme, setTheme] = useState("github");
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
+  const [problemId, setProblemId] = useState(null);
+  console.log("Problem Id", problemId)
+
   const { slug } = useParams();
 
   useEffect(() => {
@@ -41,6 +44,7 @@ const CodeEditor = () => {
           `${import.meta.env.VITE_BASE_URL}/dsa/get-problem/${slug}`
         );
         const data = response.data;
+        setProblemId(data?.slug );
         const driveCode = data.driveCode[language.name.toLowerCase()];
         const userFunction = data.userFunction[language.name.toLowerCase()];
         setCode(`${driveCode}\n${userFunction}`);
@@ -51,6 +55,23 @@ const CodeEditor = () => {
 
     fetchData();
   }, [slug, language]);
+
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/dsa/submit-code`,
+        {
+          problemId, // the problem id retrieved from fetchData
+          language: language.name.toLowerCase(),
+          code,
+        }
+      );
+      setOutput(response.data.message);
+    } catch (error) {
+      console.error("Error submitting code:", error);
+      setOutput("Error: " + (error.response?.data?.error || error.message));
+    }
+  };
 
   const handleLanguageChange = (e) => {
     const selectedLanguage = languages.find(
@@ -97,7 +118,7 @@ const CodeEditor = () => {
 
   return (
     <div className="flex flex-col flex-grow overflow-hidden">
-      <header className="flex items-center p-4 bg-gray-800 text-white relative">
+      <header className="flex items-center p-4 bg-white text-black relative">
         <span className="font-bold text-lg">Byte Leepr</span>
 
         <select
@@ -113,7 +134,7 @@ const CodeEditor = () => {
         </select>
 
         <button
-          className="ml-4 text-white"
+          className="ml-4 text-black cursor-pointer"
           onClick={() => setShowSettings(!showSettings)}
         >
           <IoSettingsOutline size={24} />
@@ -154,7 +175,7 @@ const CodeEditor = () => {
 
           <button
             onClick={() => setShowSettings(false)}
-            className="w-full p-2 bg-gray-800 text-white rounded mt-2"
+            className="w-full p-2 bg-white text-black rounded mt-2 cursor-pointer"
           >
             Close
           </button>
@@ -177,20 +198,23 @@ const CodeEditor = () => {
         />
       </div>
 
-      <div className="output p-4 bg-gray-200">
+      <div className="output p-4 bg-white text-black">
         <h2 className="font-bold text-lg">Output:</h2>
         <pre>{output}</pre>
       </div>
 
-      <footer className="flex justify-end items-center p-4 bg-gray-800 text-white">
+      <footer className="flex justify-end items-center p-4 bg-white text-black mr-12">
         <button
-          className="mr-2 px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 flex items-center"
+          className="mr-2 px-4 py-2 border border-blue-400 flex items-center cursor-pointer"
           onClick={handleRunCode}
         >
           <FaPlay className="mr-2" />
           Compile & Run
         </button>
-        <button className="px-4 py-2 bg-green-600 rounded hover:bg-green-500 flex items-center">
+        <button
+          className="px-4 py-2 bg-blue-500 rounded flex items-center cursor-pointer"
+          onClick={handleSubmit}
+        >
           <FaCheck className="mr-2" />
           Submit
         </button>

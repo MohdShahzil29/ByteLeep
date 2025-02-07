@@ -104,7 +104,18 @@ const CodeEditor = () => {
       );
 
       console.log("Submission Response:", response.data);
-      setOutput(response.data.message || "Submitted Successfully!");
+      const { passedCount, totalTestCases, results } = response.data;
+      // Format the results into a user-friendly message.
+      let resultMessage = `Submission Results:\n`;
+      resultMessage += `Test Cases Passed: ${passedCount} out of ${totalTestCases}\n\n`;
+      results.forEach((result, index) => {
+        resultMessage += `Test Case ${index + 1}:\n`;
+        resultMessage += `  Execution Time: ${result.executionTime}\n`;
+        resultMessage += `  ${result.passed ? "Passed" : "Failed"}\n`;
+        if (result.error) resultMessage += `  Error: ${result.error}\n`;
+        resultMessage += "\n";
+      });
+      setOutput(resultMessage);
     } catch (error) {
       console.error("Error submitting solution:", error);
       setOutput(
@@ -117,7 +128,6 @@ const CodeEditor = () => {
     <div className="flex flex-col flex-grow overflow-hidden">
       <header className="flex items-center p-4 bg-white text-black relative">
         <span className="font-bold text-lg">Byte Leepr</span>
-
         <select
           value={language.name}
           onChange={handleLanguageChange}
@@ -129,7 +139,6 @@ const CodeEditor = () => {
             </option>
           ))}
         </select>
-
         <button
           className="ml-4 text-black cursor-pointer"
           onClick={() => setShowSettings(!showSettings)}
@@ -143,7 +152,6 @@ const CodeEditor = () => {
           style={{ width: "250px" }}
         >
           <h3 className="font-bold mb-2">Settings</h3>
-
           <label className="block text-sm font-medium">Theme:</label>
           <select
             value={theme}
@@ -156,7 +164,6 @@ const CodeEditor = () => {
               </option>
             ))}
           </select>
-
           <label className="block text-sm font-medium">Font Size:</label>
           <select
             value={fontSize}
@@ -169,7 +176,6 @@ const CodeEditor = () => {
               </option>
             ))}
           </select>
-
           <button
             onClick={() => setShowSettings(false)}
             className="w-full p-2 bg-white text-black rounded mt-2 cursor-pointer"
@@ -178,7 +184,6 @@ const CodeEditor = () => {
           </button>
         </div>
       )}
-
       <div className="flex-grow bg-gray-100 overflow-auto shadow-2xl">
         <AceEditor
           mode={language.mode}
@@ -194,12 +199,10 @@ const CodeEditor = () => {
           className="rounded-lg shadow-md"
         />
       </div>
-
       <div className="output p-4 bg-white text-black">
         <h2 className="font-bold text-lg">Output:</h2>
         <pre>{output}</pre>
       </div>
-
       <footer className="flex justify-end items-center p-4 bg-white text-black mr-12">
         <button
           className="mr-2 px-4 py-2 border border-blue-400 flex items-center cursor-pointer"

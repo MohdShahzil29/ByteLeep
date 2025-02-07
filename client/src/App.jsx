@@ -10,6 +10,7 @@ import FloatingButton from "./components/FloatingButton";
 import Tutorial from "./pages/tutorial/Tutorial";
 import Compiler from "./pages/Compiler";
 import Executor from "./components/compiler/codeexecutor/Executor";
+import Web from "./components/web/Web";
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/tutorial" element={<Tutorial />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/web-dev" element={<Web />} />
       </Routes>
       <FloatingButton />
       {/* <Footer /> */}

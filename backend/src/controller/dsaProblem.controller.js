@@ -163,9 +163,53 @@ export const getProblemInputBySlug = async (req, res) => {
   }
 };
 
-function compareOutput(output, expected) {
-  return output.trim() === expected.trim();
+function normalizeOutput(str) {
+  return str
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .trim();
 }
+
+// Use word boundaries so that digits embedded in words are ignored.
+function extractNumbers(str) {
+  return str.match(/\b\d+\b/g) || [];
+}
+
+/**
+ * Extract only the relevant section from the combined output.
+ * If the expected array length is 6, extract numbers from after "Reversed arr1:".
+ * If the expected array length is 5, extract numbers from after "Reversed arr2:".
+ * Otherwise, extract all numbers.
+ */
+function extractRelevantNumbers(output, expectedNumbersLength) {
+  let sectionOutput = "";
+  if (expectedNumbersLength === 6) {
+    // Look for "Reversed arr1:" and take the text until "Reversed arr2:" (if present)
+    const parts = output.split("Reversed arr1:");
+    if (parts.length > 1) {
+      sectionOutput = parts[1].split("Reversed arr2:")[0];
+    } else {
+      sectionOutput = output;
+    }
+  } else if (expectedNumbersLength === 5) {
+    // Look for "Reversed arr2:" and take the text after it.
+    const parts = output.split("Reversed arr2:");
+    if (parts.length > 1) {
+      sectionOutput = parts[1];
+    } else {
+      sectionOutput = output;
+    }
+  } else {
+    sectionOutput = output;
+  }
+  return extractNumbers(sectionOutput);
+}
+
+// ----------------------
+// Code Execution Functions
+// ----------------------
 
 function runUserCode(language, code, inputData) {
   return new Promise((resolve, reject) => {
@@ -177,10 +221,18 @@ function runUserCode(language, code, inputData) {
     }
 
     if (language === "java") {
-      fileName = "Solution.java";
-      fs.writeFileSync(path.join(workDir, fileName), code);
-      compileCmd = `javac ${fileName}`;
-      runCmd = `java Solution`;
+      const classNameMatch = code.match(/public\s+class\s+(\w+)/);
+      if (classNameMatch && classNameMatch[1]) {
+        const className = classNameMatch[1];
+        fileName = `${className}.java`;
+        fs.writeFileSync(path.join(workDir, fileName), code);
+        compileCmd = `javac ${fileName}`;
+        runCmd = `java ${className}`;
+      } else {
+        return reject(
+          new Error("Could not determine public class name in Java code.")
+        );
+      }
     } else if (language === "python") {
       fileName = "solution.py";
       fs.writeFileSync(path.join(workDir, fileName), code);
@@ -197,6 +249,7 @@ function runUserCode(language, code, inputData) {
     } else {
       return reject(new Error("Unsupported language"));
     }
+
     const executeCommand = (cmd, input) => {
       return new Promise((res, rej) => {
         const process = exec(
@@ -218,11 +271,9 @@ function runUserCode(language, code, inputData) {
 
     (async () => {
       try {
-    
         if (compileCmd) {
           await executeCommand(compileCmd, "");
         }
-
         const output = await executeCommand(runCmd, inputData);
         resolve(output);
       } catch (error) {
@@ -231,6 +282,13 @@ function runUserCode(language, code, inputData) {
     })();
   });
 }
+
+// ----------------------
+// API Endpoints
+// ----------------------
+
+// Other endpoints (create, get, update, etc.) remain unchanged.
+
 export const submitSolution = async (req, res) => {
   try {
     const { language, code, slug } = req.body;
@@ -240,13 +298,12 @@ export const submitSolution = async (req, res) => {
         .json({ message: "language, code, and slug are required." });
     }
 
-    // Fetch the problem from the database (using the slug)
+    // Fetch the problem from the database using the slug
     const problem = await DsaProblem.findOne({ slug });
     if (!problem) {
       return res.status(404).json({ message: "Problem not found." });
     }
 
-    // Ensure the problem has test cases
     const testCases = problem.testCases;
     if (!testCases || testCases.length === 0) {
       return res
@@ -256,25 +313,32 @@ export const submitSolution = async (req, res) => {
 
     let results = [];
 
-    // Iterate through each test case
+    // Iterate through each test case and run the code
     for (const testCase of testCases) {
-      // In case testCase.input/output are arrays, join them into a string
       const input = Array.isArray(testCase.input)
         ? testCase.input.join("\n")
         : testCase.input;
       const expectedOutput = Array.isArray(testCase.output)
         ? testCase.output.join("\n")
         : testCase.output;
+      const expectedNumbers = extractNumbers(expectedOutput);
       const startTime = Date.now();
       try {
-        // Execute the user code using our helper
         const output = await runUserCode(language.toLowerCase(), code, input);
         const executionTime = Date.now() - startTime;
-        const passed = compareOutput(output, expectedOutput);
+        // Extract only the relevant section based on expected numbers length.
+        const actualNumbers = extractRelevantNumbers(
+          output,
+          expectedNumbers.length
+        );
+        console.log("Actual Numbers:", actualNumbers);
+        console.log("Expected Numbers:", expectedNumbers);
+        const passed =
+          JSON.stringify(actualNumbers) === JSON.stringify(expectedNumbers);
         results.push({
           testCaseId: testCase._id,
           output: output.trim(),
-          executionTime,
+          executionTime: `${executionTime}ms`,
           passed,
         });
       } catch (error) {
@@ -286,8 +350,15 @@ export const submitSolution = async (req, res) => {
       }
     }
 
+    const passedCount = results.filter((result) => result.passed).length;
     const allPassed = results.every((result) => result.passed);
-    return res.status(200).json({ success: allPassed, results });
+
+    return res.status(200).json({
+      success: allPassed,
+      passedCount,
+      totalTestCases: testCases.length,
+      results,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });

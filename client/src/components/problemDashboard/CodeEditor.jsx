@@ -33,7 +33,7 @@ const CodeEditor = () => {
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
   const [problemId, setProblemId] = useState(null);
-  console.log("Problem Id", problemId)
+  console.log("Problem slug", problemId);
 
   const { slug } = useParams();
 
@@ -44,7 +44,7 @@ const CodeEditor = () => {
           `${import.meta.env.VITE_BASE_URL}/dsa/get-problem/${slug}`
         );
         const data = response.data;
-        setProblemId(data?.slug );
+        setProblemId(data?.slug);
         const driveCode = data.driveCode[language.name.toLowerCase()];
         const userFunction = data.userFunction[language.name.toLowerCase()];
         setCode(`${driveCode}\n${userFunction}`);
@@ -56,23 +56,6 @@ const CodeEditor = () => {
     fetchData();
   }, [slug, language]);
 
-  const handleSubmit = async () => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/dsa/submit-code`,
-        {
-          problemId, // the problem id retrieved from fetchData
-          language: language.name.toLowerCase(),
-          code,
-        }
-      );
-      setOutput(response.data.message);
-    } catch (error) {
-      console.error("Error submitting code:", error);
-      setOutput("Error: " + (error.response?.data?.error || error.message));
-    }
-  };
-
   const handleLanguageChange = (e) => {
     const selectedLanguage = languages.find(
       (lang) => lang.name === e.target.value
@@ -83,8 +66,6 @@ const CodeEditor = () => {
   const handleCodeChange = (newCode) => setCode(newCode);
 
   const handleRunCode = async () => {
-    console.log("Fetching input data for execution...");
-
     try {
       // Fetch input data from API
       const inputResponse = await axios.get(
@@ -93,18 +74,13 @@ const CodeEditor = () => {
       let inputData = inputResponse.data.input || "";
       inputData = inputData.map((line) => line.replace(/,/g, " ")).join("\n");
 
-      console.log("Sending request to execute code...");
-      console.log("Language:", language.name.toLowerCase());
-      console.log("Code:", code);
-      console.log("Input:", inputData);
-
       // Send code and input to backend for execution
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/execute`,
         {
           language: language.name.toLowerCase(),
           code,
-          inputData, // Send input data with request
+          inputData,
         }
       );
 
@@ -113,6 +89,27 @@ const CodeEditor = () => {
     } catch (error) {
       console.error("Error executing code:", error);
       setOutput("Error: " + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/dsa/submit`,
+        {
+          slug, // Send the problem slug
+          language: language.name.toLowerCase(),
+          code,
+        }
+      );
+
+      console.log("Submission Response:", response.data);
+      setOutput(response.data.message || "Submitted Successfully!");
+    } catch (error) {
+      console.error("Error submitting solution:", error);
+      setOutput(
+        "Submission Failed: " + (error.response?.data?.error || error.message)
+      );
     }
   };
 

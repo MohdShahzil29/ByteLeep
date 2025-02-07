@@ -4,7 +4,7 @@ import CodeEditor from "../components/problemDashboard/CodeEditor";
 
 const ProblemDashboard = () => {
   return (
-    <div className="flex flex-col lg:flex-row h-screen">
+    <div className="flex flex-col lg:flex-row">
       <Details />
       <CodeEditor />
     </div>

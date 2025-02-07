@@ -7,7 +7,7 @@ import {
   updateProblem,
   deleteProblem,
   getProblemInputBySlug,
-  submitCodeController,
+  submitSolution,
 } from "../controller/dsaProblem.controller.js";
 import { isAdmin, authenticateUser } from "../middlewares/Auth.js";
 
@@ -47,7 +47,6 @@ router.put(
 );
 router.delete("/delete/:id", deleteProblem);
 router.get("/get-input/:slug", getProblemInputBySlug);
-router.post("/submit-code", submitCodeController);
-
+router.post("/submit", submitSolution);
 
 export default router;

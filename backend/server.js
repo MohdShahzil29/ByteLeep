@@ -57,16 +57,16 @@ app.post("/api/gemini", async (req, res) => {
 app.post("/api/execute", async (req, res) => {
   try {
     const { language, code, inputData } = req.body; // include inputData
-    console.log("Received request to execute code");
-    console.log("Language:", language);
-    console.log("Code:", code);
+    // console.log("Received request to execute code");
+    // console.log("Language:", language);
+    // console.log("Code:", code);
     if (!language || !code) {
       return res.status(400).json({ error: "Language and code are required" });
     }
 
     // Pass inputData to the execution function.
     const output = await executeCode(language, code, inputData);
-    console.log("Execution Output:", output);
+    // console.log("Execution Output:", output);
     res.json({ output });
   } catch (error) {
     console.error("Execution Error:", error);

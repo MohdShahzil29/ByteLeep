@@ -3,6 +3,14 @@ import redisClient from "../config/redis.js";
 import { validationResult } from "express-validator";
 import slugify from "slugify";
 
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Create a new DSA problem
 export const createProblem = async (req, res) => {
   const errors = validationResult(req);
@@ -155,113 +163,133 @@ export const getProblemInputBySlug = async (req, res) => {
   }
 };
 
-const evaluateCode = async ({ code, language, input }) => {
-  // Start timer
-  const startTime = process.hrtime();
-  let result;
-  try {
-    // For demonstration only: this example assumes JavaScript code.
-    // Never use eval in production!
-    result = eval(code);
-  } catch (err) {
-    throw new Error("Runtime Error: " + err.message);
-  }
-  // End timer and calculate elapsed time in ms
-  const diff = process.hrtime(startTime);
-  const timeTaken = diff[0] * 1e3 + diff[1] / 1e6; // convert seconds + nanoseconds to ms
+function compareOutput(output, expected) {
+  return output.trim() === expected.trim();
+}
 
-  // Simulate memory usage (in MB) for demonstration purposes.
-  const memoryUsed = process.memoryUsage().heapUsed / 1024 / 1024;
+function runUserCode(language, code, inputData) {
+  return new Promise((resolve, reject) => {
+    let fileName, compileCmd, runCmd;
+    const workDir = path.join(__dirname, "temp");
 
-  // Return simulated result along with timing/memory metrics
-  return { result, timeTaken, memoryUsed };
-};
-
-const getTimeThreshold = (timeComplexity) => {
-  switch (timeComplexity) {
-    case "O(n)":
-      return 1000; // e.g., 1000 ms
-    case "O(n log n)":
-      return 1500;
-    case "O(n^2)":
-      return 2000;
-    default:
-      return 1000;
-  }
-};
-
-const getMemoryThreshold = (spaceComplexity) => {
-  switch (spaceComplexity) {
-    case "O(1)":
-      return 50; // e.g., 50 MB
-    case "O(n)":
-      return 100;
-    default:
-      return 50;
-  }
-};
-
-export const submitCodeController = async (req, res) => {
-  try {
-    const { slug, language, code } = req.body;
-    console.log("Received Slug:", slug);
-
-    // Validate input
-    if (!slug || !language || !code) {
-      return res.status(400).json({
-        error: "Missing required fields: slug, language, or code.",
-      });
+    if (!fs.existsSync(workDir)) {
+      fs.mkdirSync(workDir);
     }
 
-    // Retrieve the problem from the database using the slug
-    const problem = await DsaProblem.findOne({ slug: slug });
-    console.log("Retrieved Problem:", problem);
+    if (language === "java") {
+      fileName = "Solution.java";
+      fs.writeFileSync(path.join(workDir, fileName), code);
+      compileCmd = `javac ${fileName}`;
+      runCmd = `java Solution`;
+    } else if (language === "python") {
+      fileName = "solution.py";
+      fs.writeFileSync(path.join(workDir, fileName), code);
+      runCmd = `python3 ${fileName}`;
+    } else if (language === "c++") {
+      fileName = "solution.cpp";
+      fs.writeFileSync(path.join(workDir, fileName), code);
+      compileCmd = `g++ ${fileName} -o solution`;
+      runCmd = `./solution`;
+    } else if (language === "javascript") {
+      fileName = "solution.js";
+      fs.writeFileSync(path.join(workDir, fileName), code);
+      runCmd = `node ${fileName}`;
+    } else {
+      return reject(new Error("Unsupported language"));
+    }
+    const executeCommand = (cmd, input) => {
+      return new Promise((res, rej) => {
+        const process = exec(
+          cmd,
+          { cwd: workDir, timeout: 2000 },
+          (error, stdout, stderr) => {
+            if (error) {
+              return rej(error);
+            }
+            res(stdout);
+          }
+        );
+        if (input) {
+          process.stdin.write(input);
+          process.stdin.end();
+        }
+      });
+    };
 
+    (async () => {
+      try {
+    
+        if (compileCmd) {
+          await executeCommand(compileCmd, "");
+        }
+
+        const output = await executeCommand(runCmd, inputData);
+        resolve(output);
+      } catch (error) {
+        reject(error);
+      }
+    })();
+  });
+}
+export const submitSolution = async (req, res) => {
+  try {
+    const { language, code, slug } = req.body;
+    if (!language || !code || !slug) {
+      return res
+        .status(400)
+        .json({ message: "language, code, and slug are required." });
+    }
+
+    // Fetch the problem from the database (using the slug)
+    const problem = await DsaProblem.findOne({ slug });
     if (!problem) {
-      return res.status(404).json({ error: "Problem not found." });
+      return res.status(404).json({ message: "Problem not found." });
     }
 
-    const { testCases, expectedTimeSpaceComplexity } = problem;
-    const { timeComplexity, spaceComplexity } = expectedTimeSpaceComplexity;
+    // Ensure the problem has test cases
+    const testCases = problem.testCases;
+    if (!testCases || testCases.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No test cases available for this problem." });
+    }
 
-    // Define thresholds (in ms and MB respectively)
-    const timeThreshold = getTimeThreshold(timeComplexity);
-    const memoryThreshold = getMemoryThreshold(spaceComplexity);
+    let results = [];
 
-    // Iterate through test cases
+    // Iterate through each test case
     for (const testCase of testCases) {
-      const { result, timeTaken, memoryUsed } = await evaluateCode({
-        code,
-        language,
-        input: testCase.input,
-      });
-
-      // Compare the evaluated result with the expected output
-      if (JSON.stringify(result) !== JSON.stringify(testCase.output)) {
-        return res
-          .status(400)
-          .json({ error: "Wrong Answer for one or more test cases." });
-      }
-
-      // Check the time threshold
-      if (timeTaken > timeThreshold) {
-        return res.status(400).json({
-          error: "Time Complexity Error: Execution exceeded time threshold.",
+      // In case testCase.input/output are arrays, join them into a string
+      const input = Array.isArray(testCase.input)
+        ? testCase.input.join("\n")
+        : testCase.input;
+      const expectedOutput = Array.isArray(testCase.output)
+        ? testCase.output.join("\n")
+        : testCase.output;
+      const startTime = Date.now();
+      try {
+        // Execute the user code using our helper
+        const output = await runUserCode(language.toLowerCase(), code, input);
+        const executionTime = Date.now() - startTime;
+        const passed = compareOutput(output, expectedOutput);
+        results.push({
+          testCaseId: testCase._id,
+          output: output.trim(),
+          executionTime,
+          passed,
         });
-      }
-
-      // Check the memory usage threshold
-      if (memoryUsed > memoryThreshold) {
-        return res.status(400).json({
-          error: "Space Complexity Error: Execution exceeded memory threshold.",
+      } catch (error) {
+        results.push({
+          testCaseId: testCase._id,
+          error: error.message,
+          passed: false,
         });
       }
     }
 
-    // If all test cases pass
-    return res.status(200).json({ message: "Accepted" });
+    const allPassed = results.every((result) => result.passed);
+    return res.status(200).json({ success: allPassed, results });
   } catch (error) {
-    console.error("Error in submitCodeController:", error);
-    return res.status(500).json({ error: "Server Error: " + error.message });
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
 };

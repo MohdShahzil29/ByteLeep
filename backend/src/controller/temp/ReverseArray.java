@@ -13,7 +13,7 @@ public class ReverseArray {
         printArray(arr1);
 
         System.out.println("Reversed arr2:");
-        printArray(arr2);   
+        printArray(arr2);
     }
 
     // Method to reverse an array

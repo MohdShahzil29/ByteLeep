@@ -33,7 +33,11 @@ const CodeEditor = () => {
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
   const [problemId, setProblemId] = useState(null);
-  console.log("Problem slug", problemId);
+  const [submissionQueue, setSubmissionQueue] = useState([]);
+  const [passedCount, setPassedCount] = useState(0);
+  const [totalTestCases, setTotalTestCases] = useState(0);
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [testCaseResults, setTestCaseResults] = useState([]);
 
   const { slug } = useParams();
 
@@ -67,14 +71,21 @@ const CodeEditor = () => {
 
   const handleRunCode = async () => {
     try {
-      // Fetch input data from API
       const inputResponse = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/dsa/get-input/${slug}`
       );
       let inputData = inputResponse.data.input || "";
-      inputData = inputData.map((line) => line.replace(/,/g, " ")).join("\n");
 
-      // Send code and input to backend for execution
+      if (Array.isArray(inputData)) {
+        inputData = inputData
+          .map((line) =>
+            typeof line === "string" ? line.replace(/,/g, " ") : line
+          )
+          .join("\n");
+      } else {
+        throw new Error("Input data is not an array");
+      }
+
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/execute`,
         {
@@ -93,11 +104,19 @@ const CodeEditor = () => {
   };
 
   const handleSubmit = async () => {
+    const submissionId = Date.now(); // Unique identifier for the submission
+    setSubmissionQueue((prevQueue) => [
+      ...prevQueue,
+      { id: submissionId, status: "pending" },
+    ]);
+
+    setSubmissionMessage("Submission is in queue");
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/dsa/submit`,
         {
-          slug, // Send the problem slug
+          slug,
           language: language.name.toLowerCase(),
           code,
         }
@@ -105,22 +124,76 @@ const CodeEditor = () => {
 
       console.log("Submission Response:", response.data);
       const { passedCount, totalTestCases, results } = response.data;
-      // Format the results into a user-friendly message.
+
+      // Check if there is a failure in the results
+      const failedResult = results.find((result) => !result.passed);
+      if (failedResult) {
+        // If a failure is found, display the error and stop further evaluation
+        setOutput(`Test Case ${results.indexOf(failedResult) + 1}: Failed\n`);
+        setOutput(
+          (prevOutput) =>
+            prevOutput + `Error: ${failedResult.error || "Unknown error"}\n`
+        );
+        setOutput(
+          (prevOutput) =>
+            prevOutput + `Expected Output:\n${failedResult.expectedOutput}\n`
+        );
+        setOutput(
+          (prevOutput) => prevOutput + `Actual Output:\n${failedResult.output}`
+        );
+
+        setSubmissionQueue((prevQueue) =>
+          prevQueue.map((submission) =>
+            submission.id === submissionId
+              ? { ...submission, status: "failed" }
+              : submission
+          )
+        );
+
+        setSubmissionMessage(""); // Clear the message after processing
+        return;
+      }
+
+      const totalExecutionTime = results.reduce((sum, result) => {
+        const time = parseInt(result.executionTime);
+        return sum + (isNaN(time) ? 0 : time);
+      }, 0);
+      const averageExecutionTime = totalExecutionTime / results.length;
+
       let resultMessage = `Submission Results:\n`;
-      resultMessage += `Test Cases Passed: ${passedCount} out of ${totalTestCases}\n\n`;
-      results.forEach((result, index) => {
-        resultMessage += `Test Case ${index + 1}:\n`;
-        resultMessage += `  Execution Time: ${result.executionTime}\n`;
-        resultMessage += `  ${result.passed ? "Passed" : "Failed"}\n`;
-        if (result.error) resultMessage += `  Error: ${result.error}\n`;
-        resultMessage += "\n";
-      });
+      resultMessage += `Test Cases Passed: ${passedCount} out of ${totalTestCases}\n`;
+      resultMessage += `Average Execution Time: ${averageExecutionTime.toFixed(
+        2
+      )}ms\n\n`;
       setOutput(resultMessage);
+
+      setSubmissionQueue((prevQueue) =>
+        prevQueue.map((submission) =>
+          submission.id === submissionId
+            ? { ...submission, status: "completed" }
+            : submission
+        )
+      );
+
+      setPassedCount(passedCount);
+      setTotalTestCases(totalTestCases);
+      setTestCaseResults(results); // Store detailed test case results
+      setSubmissionMessage(""); // Clear the message after processing
     } catch (error) {
       console.error("Error submitting solution:", error);
       setOutput(
         "Submission Failed: " + (error.response?.data?.error || error.message)
       );
+
+      setSubmissionQueue((prevQueue) =>
+        prevQueue.map((submission) =>
+          submission.id === submissionId
+            ? { ...submission, status: "failed" }
+            : submission
+        )
+      );
+
+      setSubmissionMessage(""); // Clear the message after processing
     }
   };
 
@@ -219,6 +292,38 @@ const CodeEditor = () => {
           Submit
         </button>
       </footer>
+      <div className="submission-queue p-4 bg-white text-black">
+        <h2 className="font-bold text-lg">Submission Queue:</h2>
+        <ul>
+          {submissionQueue.map((submission) => (
+            <li key={submission.id}>
+              Submission {submission.id}: {submission.status}
+            </li>
+          ))}
+        </ul>
+        <p>
+          Test Cases Passed: {passedCount} / {totalTestCases}
+        </p>
+        {submissionMessage && <p>{submissionMessage}</p>}
+        {testCaseResults.length > 0 &&
+          !testCaseResults.some((result) => !result.passed) && (
+            <div>
+              <h3 className="font-bold text-lg">Test Case Results:</h3>
+              <ul>
+                {testCaseResults.map((result, index) => (
+                  <li
+                    key={index}
+                    className={
+                      result.passed ? "text-green-600" : "text-red-600"
+                    }
+                  >
+                    Test Case {index + 1}: {result.passed ? "Passed" : "Failed"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+      </div>
     </div>
   );
 };

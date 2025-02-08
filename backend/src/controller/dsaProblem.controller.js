@@ -45,10 +45,10 @@ export const getOneProblemBySlug = async (req, res) => {
 
   try {
     // Check if the problem is cached
-    const cachedProblem = await redisClient.get(`problem:slug:${slug}`);
-    if (cachedProblem) {
-      return res.status(200).json(JSON.parse(cachedProblem));
-    }
+    // const cachedProblem = await redisClient.get(`problem:slug:${slug}`);
+    // if (cachedProblem) {
+    //   return res.status(200).json(JSON.parse(cachedProblem));
+    // }
 
     // Fetch the problem from the database
     const problem = await DsaProblem.findOne({ slug });
@@ -298,7 +298,6 @@ export const submitSolution = async (req, res) => {
         .json({ message: "language, code, and slug are required." });
     }
 
-    // Fetch the problem from the database using the slug
     const problem = await DsaProblem.findOne({ slug });
     if (!problem) {
       return res.status(404).json({ message: "Problem not found." });
@@ -313,7 +312,6 @@ export const submitSolution = async (req, res) => {
 
     let results = [];
 
-    // Iterate through each test case and run the code
     for (const testCase of testCases) {
       const input = Array.isArray(testCase.input)
         ? testCase.input.join("\n")
@@ -326,18 +324,16 @@ export const submitSolution = async (req, res) => {
       try {
         const output = await runUserCode(language.toLowerCase(), code, input);
         const executionTime = Date.now() - startTime;
-        // Extract only the relevant section based on expected numbers length.
         const actualNumbers = extractRelevantNumbers(
           output,
           expectedNumbers.length
         );
-        console.log("Actual Numbers:", actualNumbers);
-        console.log("Expected Numbers:", expectedNumbers);
         const passed =
           JSON.stringify(actualNumbers) === JSON.stringify(expectedNumbers);
         results.push({
           testCaseId: testCase._id,
           output: output.trim(),
+          expectedOutput, // Include expected output in the response
           executionTime: `${executionTime}ms`,
           passed,
         });
@@ -345,6 +341,7 @@ export const submitSolution = async (req, res) => {
         results.push({
           testCaseId: testCase._id,
           error: error.message,
+          expectedOutput, // Include expected output in the response
           passed: false,
         });
       }

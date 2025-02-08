@@ -15,9 +15,13 @@ const dsaProblemSchema = new Schema(
     },
     accuracy: {
       type: Number,
+      required: true,
       min: 0,
       max: 100,
-      required: true,
+      validate: {
+        validator: Number.isFinite,
+        message: "Accuracy must be a finite number",
+      },
     },
     points: {
       type: Number,
@@ -28,11 +32,11 @@ const dsaProblemSchema = new Schema(
       required: true,
     },
     input: {
-      type: [Schema.Types.Mixed], 
+      type: [Schema.Types.Mixed],
       required: true,
     },
     output: {
-      type: [Schema.Types.Mixed], 
+      type: [Schema.Types.Mixed],
       required: true,
     },
     shortExplanation: {
@@ -56,16 +60,16 @@ const dsaProblemSchema = new Schema(
       ref: "Category",
       required: true,
     },
-    driveCode: {
-      java: String,
-      python: String,
-      cpp: String,
-    },
-    userFunction: {
-      java: String,
-      python: String,
-      cpp: String,
-    },
+    // driveCode: {
+    //   java: String,
+    //   python: String,
+    //   cpp: String,
+    // },
+    // userFunction: {
+    //   java: String,
+    //   python: String,
+    //   cpp: String,
+    // },
     slug: {
       type: String,
       unique: true,

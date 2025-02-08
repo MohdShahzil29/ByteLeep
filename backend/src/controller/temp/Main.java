@@ -1,4 +1,4 @@
-public class Main { // Class name should match the filename
+public class Main {
     public String longestCommonPrefix(String[] strs) {
         if (strs == null || strs.length == 0) {
             return "";
@@ -18,7 +18,7 @@ public class Main { // Class name should match the filename
     }
 
     public static void main(String[] args) {
-        Main solution = new Main(); // Change class reference
+        Main solution = new Main();
 
         String[] input1 = {"flower", "flow", "flight"};
         System.out.println("Output: " + solution.longestCommonPrefix(input1)); // Expected: "fl"

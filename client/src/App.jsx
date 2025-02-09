@@ -12,6 +12,9 @@ import Compiler from "./pages/Compiler";
 import Executor from "./components/compiler/codeexecutor/Executor";
 import Web from "./components/web/Web";
 import Details from "./pages/Details";
+import Assessment from "./pages/Assessment";
+import CoursePage from "./pages/CoursePage";
+import DetailMockTest from "./pages/DetailMockTest";
 
 
 function App() {
@@ -29,6 +32,9 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/web-dev" element={<Web />} />
         <Route path="/problem-list/:slug" element={<Details />} />
+        <Route path="/mock-test" element={ <Assessment />} />
+        <Route path="/course/:slug" element={<CoursePage />} />
+        <Route path="/test/:slug" element={<DetailMockTest />} />
       </Routes>
       <FloatingButton />
       {/* <Footer /> */}

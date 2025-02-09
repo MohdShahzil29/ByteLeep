@@ -7,6 +7,8 @@ import RoadmapSection from "../components/WebDevelopment";
 import DSAComponent from "../components/DSA";
 import NewsLetter from '../components/NewsLetter'
 import Footer from "../components/Footer";
+import AptitudeTestBanner from "./AptitudeTestBanner";
+import AssessmentPlatform from "./AssessmentPlatform";
 
 const webTechnologies = [
   { name: "JavaScript", icon: "FaJava" },
@@ -44,6 +46,7 @@ const HomePage = () => {
         buttonLabel="View All"
       /> */}
       <DSAComponent />
+      <AptitudeTestBanner />
       <NewsLetter />
       <Footer />
     </div>

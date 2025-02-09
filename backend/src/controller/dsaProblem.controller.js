@@ -1,6 +1,6 @@
 import DsaProblem from "../models/dsaproblem.models.js";
 import redisClient from "../config/redis.js";
-import { validationResult } from "express-validator";
+// import { validationResult } from "express-validator";
 import slugify from "slugify";
 
 import { exec } from "child_process";
@@ -13,30 +13,73 @@ const __dirname = path.dirname(__filename);
 
 // Create a new DSA problem
 export const createProblem = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   try {
-    const { title, ...rest } = req.body;
+    const {
+      title,
+      difficulty,
+      points,
+      description,
+      input,
+      output,
+      shortExplanation,
+      constraints,
+      companyTags,
+      topicTags,
+      category,
+      testCases,
+      expectedTimeSpaceComplexity,
+    } = req.body;
+    // Validate required fields
+    if (!title || typeof title !== "string") {
+      return res
+        .status(400)
+        .json({ error: "Title is required and must be a string." });
+    }
+
+    if (!difficulty || !["Easy", "Medium", "Hard"].includes(difficulty)) {
+      return res
+        .status(400)
+        .json({ error: "Difficulty must be Easy, Medium, or Hard." });
+    }
+
+    if (!points || typeof points !== "number") {
+      return res.status(400).json({ error: "Points must be a number." });
+    }
+
+    if (!description || typeof description !== "string") {
+      return res
+        .status(400)
+        .json({ error: "Description is required and must be a string." });
+    }
 
     const slug = slugify(title, { lower: true, strict: true });
 
-    // Check if the slug already exists
-    const existingSlug = await DsaProblem.findOne({ slug });
-    if (existingSlug) {
-      return res
-        .status(409)
-        .json({ message: "A problem with this title already exists." });
-    }
+    // Create new problem
+    const newProblem = new DsaProblem({
+      title,
+      difficulty,
+      points,
+      description,
+      input,
+      output,
+      shortExplanation,
+      constraints,
+      companyTags,
+      topicTags,
+      category,
+      slug,
+      testCases,
+      expectedTimeSpaceComplexity,
+    });
 
-    const newProblem = new DsaProblem({ ...rest, title, slug });
     await newProblem.save();
 
-    res.status(201).json(newProblem);
+    res
+      .status(201)
+      .json({ message: "Problem created successfully!", problem: newProblem });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error creating problem:", error);
+    res.status(500).json({ error: "Internal server error." });
   }
 };
 // Get one DSA problem by Slug
@@ -44,13 +87,6 @@ export const getOneProblemBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    // Check if the problem is cached
-    // const cachedProblem = await redisClient.get(`problem:slug:${slug}`);
-    // if (cachedProblem) {
-    //   return res.status(200).json(JSON.parse(cachedProblem));
-    // }
-
-    // Fetch the problem from the database
     const problem = await DsaProblem.findOne({ slug });
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
@@ -89,7 +125,7 @@ export const getAllProblems = async (req, res) => {
 // Update a DSA problem by ID
 export const updateProblem = async (req, res) => {
   const { id } = req.params;
-  const errors = validationResult(req);
+  // const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }

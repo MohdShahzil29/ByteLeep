@@ -1,32 +1,27 @@
+import java.util.HashMap;
+
 public class Main {
-    public String longestCommonPrefix(String[] strs) {
-        if (strs == null || strs.length == 0) {
-            return "";
-        }
-
-        String prefix = strs[0];
-
-        for (int i = 1; i < strs.length; i++) {
-            while (!strs[i].startsWith(prefix)) {
-                prefix = prefix.substring(0, prefix.length() - 1);
-                if (prefix.isEmpty()) {
-                    return "";
-                }
-            }
-        }
-        return prefix;
+    public static void main(String[] args) {
+        // int[] arr = {5, 3, 10, 7, 15};
+        // int k = 18;
+        int result = findPairIndex(arr, k);
+        System.out.println(result);
     }
 
-    public static void main(String[] args) {
-        Main solution = new Main();
+    public static int findPairIndex(int[] nums, int target) {
+        HashMap<Integer, Integer> map = new HashMap<>();
 
-        String[] input1 = {"flower", "flow", "flight"};
-        System.out.println("Output: " + solution.longestCommonPrefix(input1)); // Expected: "fl"
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                // Return the index of the complement
+                return map.get(complement);
+            }
+            // Store the index of the current element
+            map.put(nums[i], i);
+        }
 
-        String[] input2 = {"dog", "racecar", "car"};
-        System.out.println("Output: " + solution.longestCommonPrefix(input2)); // Expected: ""
-
-        String[] input3 = {"interspecies", "interstellar", "interstate"};
-        System.out.println("Output: " + solution.longestCommonPrefix(input3)); // Expected: "inters"
+        // If no pair is found, return -1
+        return -1;
     }
 }

@@ -14,7 +14,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 const languages = [
   { name: "Java", mode: "java" },
   { name: "Python", mode: "python" },
-  { name: "C++", mode: "c_cpp" },
+  { name: "C++", mode: "c_cpp" }, // Ensure this matches the key in helloWorldCode
 ];
 
 const themes = [
@@ -44,16 +44,36 @@ const CodeEditor = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const helloWorldCode = {
+          java: `public class Main {
+      public static void main(String[] args) {
+          System.out.println("Hello, World!");
+      }
+  }`,
+          python: `print("Hello, World!")`,
+          c_cpp: `#include <iostream>
+  using namespace std;
+  
+  int main() {
+      cout << "Hello, World!" << endl;
+      return 0;
+  }`,
+        };
+
+        const languageKey =
+          language.name.toLowerCase() === "c++"
+            ? "c_cpp"
+            : language.name.toLowerCase();
+        setCode(helloWorldCode[languageKey] || "");
+
+        // Optional: Fetch problem data if needed
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/dsa/get-problem/${slug}`
         );
         const data = response.data;
         setProblemId(data?.slug);
-        const driveCode = data.driveCode[language.name.toLowerCase()];
-        const userFunction = data.userFunction[language.name.toLowerCase()];
-        setCode(`${driveCode}\n${userFunction}`);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching problem data:", error);
       }
     };
 

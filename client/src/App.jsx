@@ -11,6 +11,7 @@ import Tutorial from "./pages/tutorial/Tutorial";
 import Compiler from "./pages/Compiler";
 import Executor from "./components/compiler/codeexecutor/Executor";
 import Web from "./components/web/Web";
+import Details from "./pages/Details";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         <Route path="/tutorial" element={<Tutorial />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/web-dev" element={<Web />} />
+        <Route path="/problem-list/:slug" element={<Details />} />
       </Routes>
       <FloatingButton />
       {/* <Footer /> */}

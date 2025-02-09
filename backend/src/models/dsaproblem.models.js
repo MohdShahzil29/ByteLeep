@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const { Schema } = mongoose;
 
@@ -12,16 +13,6 @@ const dsaProblemSchema = new Schema(
       type: String,
       enum: ["Easy", "Medium", "Hard"],
       required: true,
-    },
-    accuracy: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 100,
-      validate: {
-        validator: Number.isFinite,
-        message: "Accuracy must be a finite number",
-      },
     },
     points: {
       type: Number,
@@ -44,7 +35,7 @@ const dsaProblemSchema = new Schema(
       required: true,
     },
     constraints: {
-      type: String,
+      type: [String],
       required: true,
     },
     companyTags: {
@@ -56,20 +47,16 @@ const dsaProblemSchema = new Schema(
       required: true,
     },
     category: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [mongoose.Schema.Types.ObjectId],
       ref: "Category",
       required: true,
+      validate: {
+        validator: function (val) {
+          return val.length >= 1 && val.length <= 3;
+        },
+        message: "A problem must have between 1 and 3 categories.",
+      },
     },
-    // driveCode: {
-    //   java: String,
-    //   python: String,
-    //   cpp: String,
-    // },
-    // userFunction: {
-    //   java: String,
-    //   python: String,
-    //   cpp: String,
-    // },
     slug: {
       type: String,
       unique: true,
@@ -89,6 +76,14 @@ const dsaProblemSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Middleware to auto-generate slug before saving
+dsaProblemSchema.pre("save", function (next) {
+  if (this.title && !this.slug) {
+    this.slug = slugify(this.title, { lower: true, strict: true });
+  }
+  next();
+});
 
 const DsaProblem = mongoose.model("DsaProblem", dsaProblemSchema);
 

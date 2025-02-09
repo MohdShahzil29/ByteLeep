@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaFilter, FaTimes, FaPlus, FaSearch } from "react-icons/fa";
+import axios from "axios";
 
 // Reusable Modal Component
 const Modal = ({ isOpen, onClose, children }) => {
@@ -128,6 +129,54 @@ const Filter = () => {
     Status: ["Solved", "Unsolved"],
   };
 
+  // State Managment
+  const [topicTags, setTopicTags] = useState([]);
+  const [componiesTags, setComponiesTags] = useState([]);
+  const [difficultyTags, setDifficultyTags] = useState([]);
+
+  console.log("Topic Tags: ", topicTags);
+  console.log("Company Tags: ", componiesTags);
+  
+  // API calls
+  const handleCategory = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/category/get-all-categories`
+      );
+      setComponiesTags(response.data.categories);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const fetchTopicTags = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/dsa/all-topic-tags`
+      );
+      setTopicTags(response.data.allTags);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchDiffculty = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/dsa/get-defficulty`
+      );
+      setDifficultyTags(response.data.defficulty);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    handleCategory();
+    fetchTopicTags();
+    fetchDiffculty();
+  }, []);
+
   const handleFilterChange = (category, value) => {
     setSelectedFilters((prev) => {
       const newFilters = { ...prev };
@@ -142,7 +191,7 @@ const Filter = () => {
 
   const handleViewAllClick = (category, options) => {
     setModalContent(
-      <div className="space-y-4">
+      <div className="space-y-4 ">
         {options.map((option) => (
           <label
             key={option}

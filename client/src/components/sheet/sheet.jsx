@@ -1,12 +1,12 @@
 import React from "react";
 import Header from "./Header";
-import SheetList from "./sheetList";
+import FeaturedSheet from "./FeaturedSheet";
 
 const Sheet = () => {
   return (
     <div className="container mx-auto p-4">
       <Header />
-      <SheetList />
+      <FeaturedSheet />
     </div>
   );
 };

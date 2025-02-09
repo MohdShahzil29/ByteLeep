@@ -13,8 +13,6 @@ const app = express.Router();
 
 app.post(
   "/create-category",
-  // authenticateUser,
-  // isAdmin,
   createCategoryController
 );
 app.get("/get-all-categories", getAllCategoryController);

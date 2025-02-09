@@ -124,7 +124,7 @@ const CodeEditor = () => {
   };
 
   const handleSubmit = async () => {
-    const submissionId = Date.now(); // Unique identifier for the submission
+    const submissionId = Date.now();
     setSubmissionQueue((prevQueue) => [
       ...prevQueue,
       { id: submissionId, status: "pending" },
@@ -170,7 +170,7 @@ const CodeEditor = () => {
           )
         );
 
-        setSubmissionMessage(""); // Clear the message after processing
+        setSubmissionMessage("");
         return;
       }
 

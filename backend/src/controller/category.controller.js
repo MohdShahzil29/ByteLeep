@@ -209,7 +209,7 @@ export const filterDsaProblemsController = async (req, res) => {
       query.topicTags = { $in: tagsArray };
     }
 
-    console.log("Generated Query:", JSON.stringify(query, null, 2)); // Debugging
+    // console.log("Generated Query:", JSON.stringify(query, null)); // Debugging
 
     const problems = await DsaProblems.find(query).populate("category");
 

@@ -54,6 +54,14 @@ export const createProblem = async (req, res) => {
 
     const slug = slugify(title, { lower: true, strict: true });
 
+    // Check existing problem
+    const existingProblem = await DsaProblem.findOne({ slug });
+    if (existingProblem) {
+      return res
+        .status(400)
+        .json({ error: "Problem with the same title already exists." });
+    }
+
     // Create new problem
     const newProblem = new DsaProblem({
       title,
@@ -199,6 +207,42 @@ export const getProblemInputBySlug = async (req, res) => {
   }
 };
 
+export const getAllTopicTagsController = async (req, res) => {
+  try {
+    // Use the distinct method to retrieve all unique topic tags
+    const allTags = await DsaProblem.distinct("topicTags");
+
+    res.status(200).send({
+      success: true,
+      message: "All topic tags retrieved successfully",
+      allTags,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error retrieving all topic tags",
+      error: error.message,
+    });
+  }
+};
+
+export const getDefficultyTags = async (req, res) => {
+  try {
+    const defficulty = await DsaProblem.distinct("difficulty");
+
+    res.status(200).send({
+      success: true,
+      message: "All Diffculty tags retrieved successfully",
+      defficulty,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error retrieving all Diffculty tags",
+      error: error.message,
+    });
+  }
+};
 function normalizeOutput(str) {
   return str
     .replace(/\r\n/g, "\n")
@@ -213,12 +257,6 @@ function extractNumbers(str) {
   return str.match(/\b\d+\b/g) || [];
 }
 
-/**
- * Extract only the relevant section from the combined output.
- * If the expected array length is 6, extract numbers from after "Reversed arr1:".
- * If the expected array length is 5, extract numbers from after "Reversed arr2:".
- * Otherwise, extract all numbers.
- */
 function extractRelevantNumbers(output, expectedNumbersLength) {
   let sectionOutput = "";
   if (expectedNumbersLength === 6) {
@@ -319,12 +357,6 @@ function runUserCode(language, code, inputData) {
   });
 }
 
-// ----------------------
-// API Endpoints
-// ----------------------
-
-// Other endpoints (create, get, update, etc.) remain unchanged.
-
 export const submitSolution = async (req, res) => {
   try {
     const { language, code, slug } = req.body;
@@ -346,7 +378,16 @@ export const submitSolution = async (req, res) => {
         .json({ message: "No test cases available for this problem." });
     }
 
+    // console.log("Test Cases:");
+    // testCases.forEach((testCase, index) => {
+    //   console.log(`Test Case ${index + 1}:`);
+    //   console.log("Input:", testCase.input);
+    //   console.log("Expected Output:", testCase.output);
+    // });
+
     let results = [];
+
+    console.log("Results:", results);
 
     for (const testCase of testCases) {
       const input = Array.isArray(testCase.input)
@@ -385,6 +426,9 @@ export const submitSolution = async (req, res) => {
 
     const passedCount = results.filter((result) => result.passed).length;
     const allPassed = results.every((result) => result.passed);
+
+    console.log("Passed count", passedCount);
+    console.log("All passed?", allPassed);
 
     return res.status(200).json({
       success: allPassed,

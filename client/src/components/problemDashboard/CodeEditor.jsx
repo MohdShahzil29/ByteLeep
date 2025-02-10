@@ -6,15 +6,14 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-tomorrow";
-import { FaPlay, FaCheck } from "react-icons/fa";
+import { FaPlay, FaCheck, FaCog, FaSun, FaMoon } from "react-icons/fa";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { IoSettingsOutline } from "react-icons/io5";
 
 const languages = [
   { name: "Java", mode: "java" },
   { name: "Python", mode: "python" },
-  { name: "C++", mode: "c_cpp" }, // Ensure this matches the key in helloWorldCode
+  { name: "C++", mode: "c_cpp" },
 ];
 
 const themes = [
@@ -32,12 +31,14 @@ const CodeEditor = () => {
   const [theme, setTheme] = useState("github");
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [problemId, setProblemId] = useState(null);
   const [submissionQueue, setSubmissionQueue] = useState([]);
   const [passedCount, setPassedCount] = useState(0);
   const [totalTestCases, setTotalTestCases] = useState(0);
   const [submissionMessage, setSubmissionMessage] = useState("");
   const [testCaseResults, setTestCaseResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { slug } = useParams();
 
@@ -53,7 +54,7 @@ const CodeEditor = () => {
           python: `print("Hello, World!")`,
           c_cpp: `#include <iostream>
   using namespace std;
-  
+
   int main() {
       cout << "Hello, World!" << endl;
       return 0;
@@ -66,7 +67,6 @@ const CodeEditor = () => {
             : language.name.toLowerCase();
         setCode(helloWorldCode[languageKey] || "");
 
-        // Optional: Fetch problem data if needed
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/dsa/get-problem/${slug}`
         );
@@ -90,36 +90,40 @@ const CodeEditor = () => {
   const handleCodeChange = (newCode) => setCode(newCode);
 
   const handleRunCode = async () => {
+    setLoading(true);
     try {
       const inputResponse = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/dsa/get-input/${slug}`
       );
       let inputData = inputResponse.data.input || "";
 
-      if (Array.isArray(inputData)) {
-        inputData = inputData
-          .map((line) =>
-            typeof line === "string" ? line.replace(/,/g, " ") : line
-          )
-          .join("\n");
-      } else {
-        throw new Error("Input data is not an array");
+      let pricesArray = [];
+      if (
+        Array.isArray(inputData) &&
+        inputData.length > 0 &&
+        inputData[0].prices
+      ) {
+        pricesArray = inputData[0].prices;
+      } else if (inputData.prices) {
+        pricesArray = inputData.prices;
       }
+
+      const formattedInputData = pricesArray.join(" ");
 
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/execute`,
         {
           language: language.name.toLowerCase(),
           code,
-          inputData,
+          inputData: formattedInputData,
         }
       );
 
-      console.log("Received response:", response.data);
       setOutput(response.data.output);
     } catch (error) {
-      console.error("Error executing code:", error);
       setOutput("Error: " + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,13 +146,10 @@ const CodeEditor = () => {
         }
       );
 
-      console.log("Submission Response:", response.data);
       const { passedCount, totalTestCases, results } = response.data;
 
-      // Check if there is a failure in the results
       const failedResult = results.find((result) => !result.passed);
       if (failedResult) {
-        // If a failure is found, display the error and stop further evaluation
         setOutput(`Test Case ${results.indexOf(failedResult) + 1}: Failed\n`);
         setOutput(
           (prevOutput) =>
@@ -197,10 +198,9 @@ const CodeEditor = () => {
 
       setPassedCount(passedCount);
       setTotalTestCases(totalTestCases);
-      setTestCaseResults(results); // Store detailed test case results
-      setSubmissionMessage(""); // Clear the message after processing
+      setTestCaseResults(results);
+      setSubmissionMessage("");
     } catch (error) {
-      console.error("Error submitting solution:", error);
       setOutput(
         "Submission Failed: " + (error.response?.data?.error || error.message)
       );
@@ -213,14 +213,28 @@ const CodeEditor = () => {
         )
       );
 
-      setSubmissionMessage(""); // Clear the message after processing
+      setSubmissionMessage("");
     }
   };
 
   return (
-    <div className="flex flex-col flex-grow overflow-hidden">
-      <header className="flex items-center p-4 bg-white text-black relative">
-        <span className="font-bold text-lg">Byte Leepr</span>
+    <div
+      className={`flex flex-col flex-grow overflow-hidden ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+      } transition-colors duration-300`}
+    >
+      <header
+        className={`flex items-center p-4 ${
+          isDarkMode ? "bg-gray-800 shadow-md" : "bg-gray-200 shadow-sm"
+        } relative`}
+      >
+        <span
+          className={`font-bold text-lg ${
+            isDarkMode ? "text-blue-400" : "text-blue-600"
+          }`}
+        >
+          Byte Leepr
+        </span>
         <select
           value={language.name}
           onChange={handleLanguageChange}
@@ -233,23 +247,38 @@ const CodeEditor = () => {
           ))}
         </select>
         <button
-          className="ml-4 text-black cursor-pointer"
+          className="ml-4 text-white cursor-pointer"
           onClick={() => setShowSettings(!showSettings)}
         >
-          <IoSettingsOutline size={24} />
+          <FaCog size={24} />
+        </button>
+        <button
+          className="ml-4 cursor-pointer"
+          onClick={() => setIsDarkMode(!isDarkMode)}
+        >
+          {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
         </button>
       </header>
       {showSettings && (
         <div
-          className="absolute top-16 right-4 bg-white shadow-md p-4 rounded z-50 mt-[79px]"
-          style={{ width: "250px" }}
+          className={`absolute top-16 right-4 ${
+            isDarkMode ? "bg-gray-800" : "bg-gray-200"
+          } shadow-md p-4 rounded z-50 mt-[79px]`}
         >
-          <h3 className="font-bold mb-2">Settings</h3>
-          <label className="block text-sm font-medium">Theme:</label>
+          <h3
+            className={`font-bold mb-2 ${
+              isDarkMode ? "text-blue-400" : "text-blue-600"
+            }`}
+          >
+            Settings
+          </h3>
+          <label className="block text-sm font-medium text-gray-300">
+            Theme:
+          </label>
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
-            className="w-full p-2 mb-2 border rounded"
+            className="w-full p-2 mb-2 border rounded bg-gray-700 text-white"
           >
             {themes.map((t) => (
               <option key={t.value} value={t.value}>
@@ -257,11 +286,13 @@ const CodeEditor = () => {
               </option>
             ))}
           </select>
-          <label className="block text-sm font-medium">Font Size:</label>
+          <label className="block text-sm font-medium text-gray-300">
+            Font Size:
+          </label>
           <select
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            className="w-full p-2 mb-2 border rounded"
+            className="w-full p-2 mb-2 border rounded bg-gray-700 text-white"
           >
             {fontSizes.map((size) => (
               <option key={size} value={size}>
@@ -271,13 +302,17 @@ const CodeEditor = () => {
           </select>
           <button
             onClick={() => setShowSettings(false)}
-            className="w-full p-2 bg-white text-black rounded mt-2 cursor-pointer"
+            className="w-full p-2 bg-gray-700 text-white rounded mt-2 cursor-pointer"
           >
             Close
           </button>
         </div>
       )}
-      <div className="flex-grow bg-gray-100 overflow-auto shadow-2xl">
+      <div
+        className={`flex-grow ${
+          isDarkMode ? "bg-gray-800" : "bg-gray-200"
+        } overflow-auto shadow-2xl p-4 rounded-lg flex flex-col md:flex-row`}
+      >
         <AceEditor
           mode={language.mode}
           theme={theme}
@@ -289,35 +324,78 @@ const CodeEditor = () => {
           width="100%"
           height="100%"
           fontSize={fontSize}
-          className="rounded-lg shadow-md"
+          className="rounded-lg shadow-md flex-grow"
         />
       </div>
-      <div className="output p-4 bg-white text-black">
-        <h2 className="font-bold text-lg">Output:</h2>
-        <pre>{output}</pre>
+      <div
+        className={`output p-4 ${
+          isDarkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"
+        } shadow-md rounded-lg`}
+      >
+        <h2
+          className={`font-bold text-lg ${
+            isDarkMode ? "text-blue-400" : "text-blue-600"
+          }`}
+        >
+          Output:
+        </h2>
+        <pre
+          className={`${
+            isDarkMode ? "bg-gray-900" : "bg-gray-100"
+          } p-4 rounded-lg shadow-inner`}
+        >
+          {output}
+        </pre>
       </div>
-      <footer className="flex justify-end items-center p-4 bg-white text-black mr-12">
+      <footer
+        className={`flex justify-end items-center p-4 ${
+          isDarkMode ? "bg-gray-800 shadow-md" : "bg-gray-200 shadow-sm"
+        } rounded-lg`}
+      >
         <button
-          className="mr-2 px-4 py-2 border border-blue-400 flex items-center cursor-pointer"
+          className="mr-2 px-4 py-2 border border-blue-400 text-blue-400 flex items-center cursor-pointer"
           onClick={handleRunCode}
+          disabled={loading}
         >
           <FaPlay className="mr-2" />
-          Compile & Run
+          {loading ? "Running..." : "Compile & Run"}
         </button>
         <button
-          className="px-4 py-2 bg-blue-500 rounded flex items-center cursor-pointer"
+          className="px-4 py-2 bg-blue-500 rounded text-white flex items-center cursor-pointer"
           onClick={handleSubmit}
+          disabled={loading}
         >
           <FaCheck className="mr-2" />
           Submit
         </button>
       </footer>
-      <div className="submission-queue p-4 bg-white text-black">
-        <h2 className="font-bold text-lg">Submission Queue:</h2>
+      <div
+        className={`submission-queue p-4 ${
+          isDarkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"
+        } shadow-md rounded-lg`}
+      >
+        <h2
+          className={`font-bold text-lg ${
+            isDarkMode ? "text-blue-400" : "text-blue-600"
+          }`}
+        >
+          Test Case Result:
+        </h2>
         <ul>
           {submissionQueue.map((submission) => (
-            <li key={submission.id}>
-              Submission {submission.id}: {submission.status}
+            <li key={submission.id} className="mb-2">
+              Submission {submission.id}:{" "}
+              <span
+                className={
+                  submission.status === "pending"
+                    ? "text-yellow-400"
+                    : submission.status === "completed"
+                    ? "text-green-400"
+                    : "text-red-400"
+                }
+              >
+                {submission.status}
+              </span>
             </li>
           ))}
         </ul>
@@ -328,13 +406,19 @@ const CodeEditor = () => {
         {testCaseResults.length > 0 &&
           !testCaseResults.some((result) => !result.passed) && (
             <div>
-              <h3 className="font-bold text-lg">Test Case Results:</h3>
+              <h3
+                className={`font-bold text-lg ${
+                  isDarkMode ? "text-blue-400" : "text-blue-600"
+                }`}
+              >
+                Test Case Results:
+              </h3>
               <ul>
                 {testCaseResults.map((result, index) => (
                   <li
                     key={index}
                     className={
-                      result.passed ? "text-green-600" : "text-red-600"
+                      result.passed ? "text-green-400" : "text-red-400"
                     }
                   >
                     Test Case {index + 1}: {result.passed ? "Passed" : "Failed"}

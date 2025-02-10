@@ -243,15 +243,6 @@ export const getDefficultyTags = async (req, res) => {
     });
   }
 };
-function normalizeOutput(str) {
-  return str
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((line) => line.trim())
-    .join("\n")
-    .trim();
-}
-
 // Use word boundaries so that digits embedded in words are ignored.
 function extractNumbers(str) {
   return str.match(/\b\d+\b/g) || [];
@@ -378,35 +369,22 @@ export const submitSolution = async (req, res) => {
         .json({ message: "No test cases available for this problem." });
     }
 
-    // console.log("Test Cases:");
-    // testCases.forEach((testCase, index) => {
-    //   console.log(`Test Case ${index + 1}:`);
-    //   console.log("Input:", testCase.input);
-    //   console.log("Expected Output:", testCase.output);
-    // });
-
     let results = [];
-
-    console.log("Results:", results);
 
     for (const testCase of testCases) {
       const input = Array.isArray(testCase.input)
-        ? testCase.input.join("\n")
+        ? testCase.input.join(" ")
         : testCase.input;
       const expectedOutput = Array.isArray(testCase.output)
-        ? testCase.output.join("\n")
+        ? testCase.output.join(" ")
         : testCase.output;
-      const expectedNumbers = extractNumbers(expectedOutput);
       const startTime = Date.now();
       try {
         const output = await runUserCode(language.toLowerCase(), code, input);
         const executionTime = Date.now() - startTime;
-        const actualNumbers = extractRelevantNumbers(
-          output,
-          expectedNumbers.length
-        );
         const passed =
-          JSON.stringify(actualNumbers) === JSON.stringify(expectedNumbers);
+          normalizeOutput(output.trim()) ===
+          normalizeOutput(expectedOutput.trim());
         results.push({
           testCaseId: testCase._id,
           output: output.trim(),
@@ -427,9 +405,6 @@ export const submitSolution = async (req, res) => {
     const passedCount = results.filter((result) => result.passed).length;
     const allPassed = results.every((result) => result.passed);
 
-    console.log("Passed count", passedCount);
-    console.log("All passed?", allPassed);
-
     return res.status(200).json({
       success: allPassed,
       passedCount,
@@ -441,3 +416,12 @@ export const submitSolution = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+function normalizeOutput(str) {
+  return str
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .trim();
+}

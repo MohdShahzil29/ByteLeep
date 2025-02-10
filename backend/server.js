@@ -58,9 +58,10 @@ app.post("/api/gemini", async (req, res) => {
 app.post("/api/execute", async (req, res) => {
   try {
     const { language, code, inputData } = req.body; // include inputData
-    // console.log("Received request to execute code");
-    // console.log("Language:", language);
-    // console.log("Code:", code);
+    console.log("Received request to execute code");
+    console.log("Language:", language);
+    console.log("Code:", code);
+    console.log("Input Data:", inputData);
     if (!language || !code) {
       return res.status(400).json({ error: "Language and code are required" });
     }

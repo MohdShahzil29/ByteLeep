@@ -1,129 +1,216 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+
 
 const DetailMockTest = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(1);
+  const { slug } = useParams();
+  const [details, setDetails] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [questions] = useState([
-    {
-      id: 1,
-      text: 'Which statement is not correct about "init" process in Unix?',
-      options: [
-        "It is generally the parent of the login shell",
-        "It has PID 1",
-        "It is the first process in the system",
-        'Init forks and execs a "getty" process at every port connected to a terminal',
-      ],
-    },
-    // Add more questions as needed
-  ]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [timer, setTimer] = useState(0);
 
-  const progress = (currentQuestion / questions.length) * 100;
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/mock-test/get-test/${slug}`
+        );
+        setDetails(response.data.test);
+        setTimer(response.data.test.timer);
+      } catch (error) {
+        console.error("Error fetching test details:", error);
+      }
+    };
+    fetchDetails();
+  }, [slug]);
+
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
+
+  if (!details) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  const questions = details.questions;
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   const handleOptionChange = (optionIndex) => {
     setSelectedOption(optionIndex);
   };
 
+  const handleSubmitAnswer = () => {
+    if (selectedOption === null) {
+      alert("Please select an option before submitting!");
+      return;
+    }
+    const correctAnswer = questions[currentQuestionIndex].correctOption;
+    setIsCorrect(selectedOption === correctAnswer);
+    setIsSubmitted(true);
+
+    if (selectedOption !== correctAnswer) {
+      setAttempts((prev) => prev + 1);
+    }
+  };
+
   const handleNext = () => {
-    if (currentQuestion < questions.length) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (attempts >= 2 && !isCorrect) {
+      alert(
+        "You must select the correct answer before moving to the next question!"
+      );
+      return;
+    }
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
+      setIsSubmitted(false);
+      setIsCorrect(null);
+      setAttempts(0);
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 1) {
-      setCurrentQuestion(currentQuestion - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
       setSelectedOption(null);
+      setIsSubmitted(false);
+      setIsCorrect(null);
+      setAttempts(0);
     }
   };
 
-  const handleSubmit = () => {
+  const handleTestSubmit = () => {
     alert("Test submitted!");
   };
 
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#FDF8EE] text-gray-800">
-      <div className="w-full md:w-1/4 bg-gray-100 p-6 rounded-lg shadow-lg">
-        <h2 className="text-lg font-bold mb-4">Course Discussions</h2>
-        <ul>
-          {[...Array(5)].map((_, i) => (
-            <li key={i} className="mb-3">
-              <a href="#" className="text-blue-600 hover:underline font-medium">
-                Mock Test (Set-{i + 1})
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="w-full md:w-3/4 p-6 bg-white rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-extrabold">Mock Test (Set-1)</h1>
-          <div className="text-lg font-medium">Remaining Time: 00:24:47</div>
+    <div className="flex flex-col h-screen bg-[#FDF8EE] text-gray-800">
+      <header className="bg-white shadow-md p-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{details.title}</h1>
+        <div className="text-lg font-semibold text-red-500">
+          Timer: {formatTime(timer)}
         </div>
-        <div className="w-full mb-6">
-          <div className="text-lg font-semibold text-center mb-2">Progress</div>
-          <div className="relative w-full bg-gray-200 rounded-full h-3 flex items-center">
-            <span className="absolute left-0 text-xs font-semibold text-gray-800">
-              0%
-            </span>
+      </header>
+
+      <div className="flex flex-1 flex-col md:flex-row">
+        <aside className="hidden md:block w-1/3 bg-gray-100 p-6 border-b md:border-r border-gray-200">
+          <p className="text-xl font-semibold mb-2">Your Progress</p>
+          <div className="relative w-full h-4 bg-gray-300 rounded-full">
             <div
-              className="bg-blue-500 h-3 rounded-full"
+              className="h-full bg-green-500"
               style={{ width: `${progress}%` }}
             ></div>
-            <span className="absolute right-0 text-xs font-semibold text-gray-800">
-              100%
-            </span>
           </div>
-        </div>
-        <div className="mb-6">
-          <div className="text-lg font-semibold mb-4">
-            Question {currentQuestion}
-          </div>
-          <p className="mb-4 text-gray-700 text-lg">
-            {questions[currentQuestion - 1].text}
-          </p>
-          <div>
-            {questions[currentQuestion - 1].options.map((option, index) => (
-              <div key={index} className="mb-3">
-                <label className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition-all">
-                  <input
-                    type="radio"
-                    name="option"
-                    checked={selectedOption === index}
-                    onChange={() => handleOptionChange(index)}
-                    className="mr-3"
-                  />
-                  {option}
-                </label>
+          <p className="text-lg font-bold mt-2">{Math.round(progress)}%</p>
+          <div className="grid grid-cols-6 gap-2 mt-4">
+            {questions.map((_, index) => (
+              <div
+                key={index}
+                className={`w-10 h-10 flex items-center justify-center font-bold text-lg rounded-full border-2 cursor-pointer transition-all ${
+                  index === currentQuestionIndex
+                    ? "border-red-500 bg-red-100"
+                    : index < currentQuestionIndex
+                    ? "border-green-500 bg-green-100"
+                    : "border-gray-300 bg-gray-100"
+                }`}
+              >
+                {index + 1}
               </div>
             ))}
           </div>
-        </div>
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={handlePrevious}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md flex items-center disabled:opacity-50"
-            disabled={currentQuestion === 1}
-          >
-            <FaChevronLeft className="mr-2" /> Previous
-          </button>
-          <button
-            onClick={handleNext}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md flex items-center disabled:opacity-50"
-            disabled={currentQuestion === questions.length}
-          >
-            Next <FaChevronRight className="ml-2" />
-          </button>
-        </div>
-        <div className="flex justify-end">
-          <button
-            onClick={handleSubmit}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-semibold"
-          >
-            Submit Test
-          </button>
-        </div>
+        </aside>
+
+        <main className="w-full md:w-2/3 p-6 flex flex-col justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">
+              Question {currentQuestionIndex + 1}
+            </h2>
+            <p className="mb-6 text-gray-700 text-xl">
+              {questions[currentQuestionIndex].text}
+            </p>
+            {questions[currentQuestionIndex].options.map((option, index) => (
+              <label
+                key={index}
+                className={`block cursor-pointer p-4 rounded-lg border-2 mb-4 ${
+                  isSubmitted && attempts >= 2 && !isCorrect
+                    ? index === questions[currentQuestionIndex].correctOption
+                      ? "border-green-500 bg-green-100"
+                      : "border-gray-300"
+                    : isSubmitted
+                    ? index === questions[currentQuestionIndex].correctOption
+                      ? "border-green-500 bg-green-100"
+                      : index === selectedOption
+                      ? "border-red-500 bg-red-100"
+                      : "border-gray-300"
+                    : selectedOption === index
+                    ? "border-blue-500 bg-blue-100"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="option"
+                  checked={selectedOption === index}
+                  onChange={() => handleOptionChange(index)}
+                  className="hidden"
+                  disabled={isSubmitted && attempts >= 2 && !isCorrect}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center mt-6">
+            <button
+              onClick={handlePrevious}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg disabled:opacity-50"
+              disabled={currentQuestionIndex === 0}
+            >
+              <FaChevronLeft className="mr-2" /> Previous
+            </button>
+
+            {!isSubmitted ? (
+              <button
+                onClick={handleSubmitAnswer}
+                className="bg-purple-500 mr-[78px] hover:bg-purple-600 text-white px-6 py-3 rounded-lg"
+              >
+                Submit Answer
+              </button>
+            ) : (
+              <button
+                onClick={handleNext}
+                className="bg-blue-500 text-white px-6 py-3 rounded-lg"
+                disabled={attempts >= 2 && !isCorrect}
+              >
+                Next <FaChevronRight className="ml-2" />
+              </button>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

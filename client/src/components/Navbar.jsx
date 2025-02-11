@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import mainLogo from '../assets/orignallogo.png'
+import { useSelector } from "react-redux";
+import mainLogo from "../assets/orignallogo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const naviagte = useNavigate();
+  const navigate = useNavigate();
+  // Retrieve authentication state (adjust the selector based on your store structure)
+  const { token } = useSelector((state) => state.auth);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -34,12 +37,21 @@ const Navbar = () => {
           <a href="#" className="px-4 py-2 hover:text-purple-500">
             Contact us
           </a>
-          <button
-            className="bg-[#4D2C5E] text-white px-6 py-2 rounded-full hover:bg-purple-600 ml-4 cursor-pointer"
-            onClick={() => naviagte("/login")}
-          >
-            Sign in
-          </button>
+          {token ? (
+            <button
+              className="bg-[#4D2C5E] text-white px-6 py-2 rounded-full hover:bg-purple-600 ml-4 cursor-pointer"
+              onClick={() => navigate("/dashboard")}
+            >
+              Dashboard
+            </button>
+          ) : (
+            <button
+              className="bg-[#4D2C5E] text-white px-6 py-2 rounded-full hover:bg-purple-600 ml-4 cursor-pointer"
+              onClick={() => navigate("/login")}
+            >
+              Sign in
+            </button>
+          )}
         </div>
         <div className="md:hidden flex items-center">
           <button
@@ -69,9 +81,9 @@ const Navbar = () => {
           </a>
           <button
             className="bg-[#4D2C5E] text-white px-6 py-2 rounded-full hover:bg-purple-600 mt-2 w-full"
-            onClick={() => naviagte("/login")}
+            onClick={() => navigate(token ? "/dashboard" : "/login")}
           >
-            Sign in
+            {token ? "Dashboard" : "Sign in"}
           </button>
         </div>
       )}

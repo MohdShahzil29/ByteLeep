@@ -32,10 +32,6 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-import userRoutes from "./src/routes/user.routes.js";
-import dsaProblemRoutes from "./src/routes/dsaproblem.routes.js";
-import categoryRoutes from "./src/routes/category.routes.js";
 
 // Gemini API Integration
 app.post("/api/gemini", async (req, res) => {
@@ -141,9 +137,18 @@ app.post("/api/run-code", (req, res) => {
   });
 });
 
+// Routes
+import userRoutes from "./src/routes/user.routes.js";
+import dsaProblemRoutes from "./src/routes/dsaproblem.routes.js";
+import categoryRoutes from "./src/routes/category.routes.js";
+import MockTestRoutes from "./src/routes/MockTest.routes.js";
+import MockCategoryRoutes from './src/routes/MockTestCategory.js'
+
 app.use("/api/user", userRoutes);
 app.use("/api/dsa", dsaProblemRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/mock-test", MockTestRoutes);
+app.use('/api/mock-category', MockCategoryRoutes)
 
 app.get("/", (req, res) => {
   res.send("Welcome to Study Platform API!");

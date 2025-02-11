@@ -1,7 +1,7 @@
 # Dockerfile for frontend
-FROM node:18-alpine
+FROM node:20.17.0
 
-WORKDIR /usr/src/app 
+WORKDIR /app 
 
 COPY package*.json .
 
@@ -11,4 +11,5 @@ COPY . .
 
 EXPOSE 5173  
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host"]
+

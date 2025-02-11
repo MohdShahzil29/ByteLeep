@@ -14,6 +14,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    enrolledTests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "MockTest",
+      },
+    ],
     role: {
       type: String,
       enum: ["user", "admin"],

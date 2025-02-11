@@ -9,6 +9,7 @@ import NewsLetter from '../components/NewsLetter'
 import Footer from "../components/Footer";
 import AptitudeTestBanner from "./AptitudeTestBanner";
 import AssessmentPlatform from "./AssessmentPlatform";
+import Warning from "../components/model/Warning";
 
 const webTechnologies = [
   { name: "JavaScript", icon: "FaJava" },

@@ -10,6 +10,7 @@ import Footer from "../components/Footer";
 import AptitudeTestBanner from "./AptitudeTestBanner";
 import AssessmentPlatform from "./AssessmentPlatform";
 import Warning from "../components/model/Warning";
+import PracticeHome from "../components/PracticeHome";
 
 const webTechnologies = [
   { name: "JavaScript", icon: "FaJava" },
@@ -33,7 +34,8 @@ const HomePage = () => {
   return (
     <div>
       <HeroSection />
-      <FeatureSection />
+      {/* <FeatureSection /> */}
+      <PracticeHome />
       <Sheet />
       <LearningExperience />
       {/* <RoadmapSection

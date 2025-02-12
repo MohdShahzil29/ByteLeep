@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./redux/AuthStore.js";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -12,6 +13,7 @@ createRoot(document.getElementById("root")).render(
       <StrictMode>
         <App />
       </StrictMode>
+      <ScrollToTop />
     </Provider>
   </BrowserRouter>
 );

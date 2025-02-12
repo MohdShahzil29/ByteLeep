@@ -5,48 +5,89 @@ import { useSelector } from "react-redux";
 import Spinner from "../components/Spinner";
 
 const AssessmentPlatform = () => {
-  const [details, setDetails] = useState([]);
+  const [tests, setTests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(5);
-  const [enrolled, setEnrolled] = useState(false);
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth);
-  console.log("Details", details);
+  const [enrolledTests, setEnrolledTests] = useState({});
 
+  // Fetch all tests and enrolled tests
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchTests = async () => {
       try {
+        // Fetch all tests
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/mock-test/get-all-test`
         );
-        setDetails(response.data.tests);
+        setTests(response.data.tests);
+
+        // Fetch enrolled tests
+        fetchEnrolledTests();
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching tests:", error);
       }
     };
-    fetchDetails();
+
+    fetchTests();
   }, []);
 
+  // Fetch enrolled tests for the user
+  const fetchEnrolledTests = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/mock-test/get-enrolled-tests`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Store enrolled tests in state as a lookup object
+      const enrolledTestsMap = {};
+      response.data.enrolledTests.forEach((test) => {
+        enrolledTestsMap[test._id] = true;
+      });
+      setEnrolledTests(enrolledTestsMap);
+    } catch (error) {
+      console.error("Error fetching enrolled tests:", error);
+    }
+  };
+
+  // Handle search functionality
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.trim()) {
+        try {
+          const response = await axios.get(
+            `${
+              import.meta.env.VITE_BASE_URL
+            }/mock-test/search?query=${searchTerm}`
+          );
+          setTests(response.data.tests);
+        } catch (error) {
+          console.error("Search API error:", error);
+        }
+      } else {
+        fetchEnrolledTests();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  // Enroll user in a test
   const enrollCourse = async (testId) => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/mock-test/enroll-test`,
         { testId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Use response.data.success to determine if enrollment succeeded.
+
       if (response.data.success) {
-        setEnrolled(true);
+        await fetchEnrolledTests(); // Re-fetch enrolled tests
         return true;
-      } else {
-        setEnrolled(false);
-        return false;
       }
+      return false;
     } catch (error) {
       console.error(
         "Enrollment failed:",
@@ -56,30 +97,29 @@ const AssessmentPlatform = () => {
     }
   };
 
-  // Updated to receive both slug and courseId
+  // Handle test start
   const handleStartTest = async (slug, testId) => {
-    const enrollmentSuccess = await enrollCourse(testId);
-    if (enrollmentSuccess) {
-      setIsLoading(true);
-      setCountdown(5);
-      const timerInterval = setInterval(() => {
-        setCountdown((prevCountdown) => {
-          if (prevCountdown === 1) {
-            clearInterval(timerInterval);
-            setIsLoading(false);
-            navigate(`/test/${slug}`);
-          }
-          return prevCountdown - 1;
-        });
-      }, 1000);
-    } else {
-      alert("Failed to enroll in the course. Please try again.");
+    if (!enrolledTests[testId]) {
+      const enrollmentSuccess = await enrollCourse(testId);
+      if (!enrollmentSuccess) {
+        alert("Failed to enroll in the test. Please try again.");
+        return;
+      }
     }
-  };
 
-  const filteredTests = details.filter((test) =>
-    test.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    setIsLoading(true);
+    setCountdown(5);
+    const timerInterval = setInterval(() => {
+      setCountdown((prevCountdown) => {
+        if (prevCountdown === 1) {
+          clearInterval(timerInterval);
+          setIsLoading(false);
+          navigate(`/test/${slug}`);
+        }
+        return prevCountdown - 1;
+      });
+    }, 1000);
+  };
 
   if (isLoading) {
     return (
@@ -101,7 +141,7 @@ const AssessmentPlatform = () => {
         </p>
         <input
           type="text"
-          placeholder="What would you want to learn? e.g. JavaScript..."
+          placeholder="Search for tests..."
           className="w-full md:w-1/2 xl:w-1/3 p-3 rounded-lg border border-gray-300 mb-12 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -109,19 +149,19 @@ const AssessmentPlatform = () => {
       </div>
 
       <div className="w-full max-w-5xl flex flex-wrap justify-center gap-8">
-        {filteredTests.length > 0 ? (
-          filteredTests.map((test, index) => (
+        {tests.length > 0 ? (
+          tests.map((test) => (
             <article
-              key={index}
+              key={test._id}
               className="bg-white rounded-lg p-6 shadow-lg transform transition-all duration-300 hover:scale-105 w-full max-w-xs"
             >
               <h3 className="text-xl font-semibold mb-2">{test.title}</h3>
               <p className="text-gray-600 mb-2">{test.description}</p>
               <button
-                onClick={() => handleStartTest(test?.slug, test?._id)}
+                onClick={() => handleStartTest(test.slug, test._id)}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-lg font-semibold transition-transform transform hover:scale-105"
               >
-                {enrolled ? "Continue Test" : "Enroll Test"}
+                {enrolledTests[test._id] ? "Continue Test" : "Enroll Test"}
               </button>
             </article>
           ))

@@ -137,6 +137,7 @@ const CodeEditor = () => {
     setSubmissionMessage("Submission is in queue");
 
     try {
+      // Remove input and output from the body
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/dsa/submit`,
         {

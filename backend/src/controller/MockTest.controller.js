@@ -1,6 +1,7 @@
 import MockTestModel from "../models/MockTest.models.js";
 import slugify from "slugify";
 import redisClient from "../config/redis.js";
+import UserModel from "../models/user.models.js";
 
 export const createTestController = async (req, res) => {
   try {
@@ -107,7 +108,23 @@ export const getAllTests = async (req, res) => {
 export const searchTests = async (req, res) => {
   try {
     const { query } = req.query;
+    // Redis cache key ke liye, query ko use kar rahe hain
+    const cacheKey = `search:${query}`;
+
+    // Check karein agar cache mein data available hai
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for query:", query);
+      return res.json({ success: true, tests: JSON.parse(cachedData) });
+    }
+
+    // Agar cache miss ho, to database se data fetch karein
     const tests = await MockTestModel.find({ title: new RegExp(query, "i") });
+
+    // Cache mein result store karein, expiry time 60 seconds (aap isse adjust kar sakte hain)
+    await redisClient.setEx(cacheKey, 60, JSON.stringify(tests));
+    console.log("Cache miss for query:", query, "- caching result");
+
     return res.json({ success: true, tests });
   } catch (error) {
     console.error("Error searching tests:", error);
@@ -224,5 +241,106 @@ export const isEnrolledTest = async (req, res) => {
       success: false,
       message: "Server Error.",
     });
+  }
+};
+
+export const getUserEnrolledTests = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const user = await UserModel.findById(userId).populate({
+      path: "enrolledTests",
+      select: "title slug description",
+    });
+
+    if (!user || !user.enrolledTests || user.enrolledTests.length === 0) {
+      return res.status(200).json({
+        success: true,
+        enrolledTests: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      enrolledTests: user.enrolledTests,
+    });
+  } catch (error) {
+    console.error("Error fetching enrolled tests:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch enrolled tests",
+    });
+  }
+};
+
+export const saveProgress = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { currentQuestionIndex, selectedOption, isSubmitted, isCorrect, attempts } = req.body;
+    const userId = req.user.id || req.user._id;
+
+    const test = await MockTestModel.findOne({ slug });
+    if (!test) {
+      return res.status(404).json({ success: false, message: "Mock Test not found." });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    const progressIndex = user.progress.findIndex(p => p.testId.toString() === test._id.toString());
+    if (progressIndex === -1) {
+      user.progress.push({
+        testId: test._id,
+        currentQuestionIndex,
+        selectedOption,
+        isSubmitted,
+        isCorrect,
+        attempts,
+      });
+    } else {
+      user.progress[progressIndex] = {
+        testId: test._id,
+        currentQuestionIndex,
+        selectedOption,
+        isSubmitted,
+        isCorrect,
+        attempts,
+      };
+    }
+
+    await user.save();
+    return res.status(200).json({ success: true, message: "Progress saved successfully." });
+  } catch (error) {
+    console.error("Error saving progress:", error);
+    return res.status(500).json({ success: false, message: "Server Error." });
+  }
+};
+
+// Get Progress
+export const getProgress = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const test = await MockTestModel.findOne({ slug });
+    if (!test) {
+      return res.status(404).json({ success: false, message: "Mock Test not found." });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    const progress = user.progress.find(p => p.testId.toString() === test._id.toString());
+    if (!progress) {
+      return res.status(404).json({ success: false, message: "No progress found for this test." });
+    }
+
+    return res.status(200).json({ success: true, progress });
+  } catch (error) {
+    console.error("Error fetching progress:", error);
+    return res.status(500).json({ success: false, message: "Server Error." });
   }
 };

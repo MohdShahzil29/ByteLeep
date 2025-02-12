@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const AptitudeTestBanner = () => {
   const navigete = useNavigate();
   return (
-    <div className="bg-gradient-to-br from-[#FFFBEC] via-[#E9F8F9] to-[#F0F0F0] flex items-center justify-center p-6">
+    <div className=" flex items-center justify-center p-6">
       <div className="max-w-4xl text-center">
         <h1 className="text-5xl md:text-6xl font-black text-gray-800 drop-shadow-lg animate-fade-in">
           Practice Aptitude Tests

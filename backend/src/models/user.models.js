@@ -1,5 +1,33 @@
 import mongoose from "mongoose";
 
+const progressSchema = new mongoose.Schema({
+  testId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "MockTest",
+    required: true,
+  },
+  currentQuestionIndex: {
+    type: Number,
+    default: 0,
+  },
+  selectedOption: {
+    type: Number,
+    default: null,
+  },
+  isSubmitted: {
+    type: Boolean,
+    default: false,
+  },
+  isCorrect: {
+    type: Boolean,
+    default: null,
+  },
+  attempts: {
+    type: Number,
+    default: 0,
+  },
+});
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -20,9 +48,10 @@ const userSchema = new mongoose.Schema(
         ref: "MockTest",
       },
     ],
+    progress: [progressSchema],
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["student", "admin"],
       default: "user",
     },
   },

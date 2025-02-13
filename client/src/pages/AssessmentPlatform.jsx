@@ -148,22 +148,26 @@ const AssessmentPlatform = () => {
         />
       </div>
 
-      <div className="w-full max-w-5xl flex flex-wrap justify-center gap-8">
+      <div className="w-full max-w-5xl flex flex-col gap-4">
         {tests.length > 0 ? (
           tests.map((test) => (
-            <article
+            <div
               key={test._id}
-              className="bg-white rounded-lg p-6 shadow-lg transform transition-all duration-300 hover:scale-105 w-full max-w-xs"
+              className="w-full border-b border-gray-300 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
             >
-              <h3 className="text-xl font-semibold mb-2">{test.title}</h3>
-              <p className="text-gray-600 mb-2">{test.description}</p>
+              <div className="mb-4 sm:mb-0">
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {test.title}
+                </h3>
+                <p className="text-gray-600 mt-2">{test.description}</p>
+              </div>
               <button
                 onClick={() => handleStartTest(test.slug, test._id)}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-lg font-semibold transition-transform transform hover:scale-105"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
               >
                 {enrolledTests[test._id] ? "Continue Test" : "Enroll Test"}
               </button>
-            </article>
+            </div>
           ))
         ) : (
           <p className="text-gray-600">No tests found.</p>

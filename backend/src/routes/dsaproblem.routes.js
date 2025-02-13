@@ -10,6 +10,8 @@ import {
   submitSolution,
   getAllTopicTagsController,
   getDefficultyTags,
+  getFilteredProblems,
+  getCompanyList,
 } from "../controller/dsaProblem.controller.js";
 import { isAdmin, authenticateUser } from "../middlewares/Auth.js";
 
@@ -30,6 +32,8 @@ router.delete("/delete/:id", deleteProblem);
 router.get("/get-input/:slug", getProblemInputBySlug);
 router.get('/all-topic-tags', getAllTopicTagsController);
 router.get('/get-defficulty', getDefficultyTags)
+router.get('/company-list', getCompanyList)
 router.post("/submit", submitSolution);
+router.get("/problems", getFilteredProblems);
 
 export default router;

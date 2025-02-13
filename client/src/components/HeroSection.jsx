@@ -24,9 +24,11 @@ const HeroSection = () => {
           <span className="text-orange-500">Future</span>
         </h1>
         <p className="text-base sm:text-lg text-gray-600">
-          Elearn is a global training provider based across the UK that
-          specialises in accredited and bespoke training courses. We crush
-          the...
+          Unlock your full potential with our all-in-one coding hub designed for
+          aspiring developers and seasoned professionals alike. Whether you’re
+          looking to master data structures and algorithms, experiment with web
+          development, or prepare for high-stakes technical interviews, our
+          platform has you covered.
         </p>
 
         {/* Icons Around Search Bar */}
@@ -34,14 +36,14 @@ const HeroSection = () => {
           <BsFillChatDotsFill className="absolute text-teal-500 text-xl sm:text-2xl -left-6 top-1/2 -translate-y-1/2 hidden md:block" />
           <BsFillQuestionCircleFill className="absolute text-indigo-500 text-xl sm:text-2xl -right-6 top-1/2 -translate-y-1/2 hidden md:block" />
 
-          <input
+          {/* <input
             type="text"
             placeholder="Search for a location..."
             className="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none text-sm sm:text-base"
           />
           <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-r-lg hover:bg-purple-700 text-sm sm:text-base">
             Search
-          </button>
+          </button> */}
         </div>
       </div>
 

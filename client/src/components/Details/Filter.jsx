@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaFilter, FaTimes, FaPlus, FaSearch } from "react-icons/fa";
 import axios from "axios";
 
-// Reusable Modal Component
+// Reusable Modal Component with scrollable content
 const Modal = ({ isOpen, onClose, children }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -37,8 +37,8 @@ const Modal = ({ isOpen, onClose, children }) => {
           </button>
         </div>
 
-        {/* Filter options */}
-        {children}
+        {/* Scrollable container for filter options */}
+        <div className="overflow-y-auto max-h-[60vh]">{children}</div>
       </div>
     </div>
   );
@@ -75,7 +75,7 @@ const MobileFilterPanel = ({
               </button>
             </div>
             <div className="mt-3">
-              {options.slice(0, 5).map((option) => (
+              {options?.slice(0, 5)?.map((option) => (
                 <label
                   key={option}
                   className="flex items-center space-x-2 cursor-pointer py-1"
@@ -109,34 +109,16 @@ const Filter = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
 
-  const filters = {
-    Companies: [
-      "Amazon",
-      "Microsoft",
-      "Flipkart",
-      "Adobe",
-      "Google",
-      "Samsung",
-      "Paytm",
-      "Morgan Stanley",
-      "Wipro",
-      "Uber",
-      "Infosys",
-      "Atlassian",
-    ],
-    Topics: ["Arrays", "Strings", "Linked List"],
-    Difficulty: ["Basic", "Easy", "Medium", "Hard"],
-    Status: ["Solved", "Unsolved"],
-  };
-
-  // State Managment
+  // API state variables
   const [topicTags, setTopicTags] = useState([]);
   const [componiesTags, setComponiesTags] = useState([]);
   const [difficultyTags, setDifficultyTags] = useState([]);
+  const [componyList, setComponyList] = useState([]);
 
-  console.log("Topic Tags: ", topicTags);
-  console.log("Company Tags: ", componiesTags);
-  
+  console.log("Company List:", componyList);
+  console.log("Topic Tags:", topicTags);
+  console.log("Difficulty Tags:", difficultyTags);
+
   // API calls
   const handleCategory = async () => {
     try {
@@ -148,6 +130,15 @@ const Filter = () => {
       console.log(error.message);
     }
   };
+
+  const fetchCompanyList = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/dsa/company-list`);
+      setComponyList(response.data.companyList);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const fetchTopicTags = async () => {
     try {
@@ -165,7 +156,7 @@ const Filter = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/dsa/get-defficulty`
       );
-      setDifficultyTags(response.data.defficulty);
+      setDifficultyTags(response.data.difficulty);
     } catch (error) {
       console.log(error);
     }
@@ -175,7 +166,17 @@ const Filter = () => {
     handleCategory();
     fetchTopicTags();
     fetchDiffculty();
+    fetchCompanyList();
   }, []);
+
+
+  // Use API data for filters (Status remains static)
+  const filters = {
+    Companies: componyList?.map((cat) => cat),
+    Topics: topicTags,
+    Difficulty: difficultyTags,
+    Status: ["Solved", "Unsolved"],
+  };
 
   const handleFilterChange = (category, value) => {
     setSelectedFilters((prev) => {
@@ -191,8 +192,8 @@ const Filter = () => {
 
   const handleViewAllClick = (category, options) => {
     setModalContent(
-      <div className="space-y-4 ">
-        {options.map((option) => (
+      <div className="space-y-4">
+        {options?.map((option) => (
           <label
             key={option}
             className="flex items-center space-x-2 cursor-pointer py-1"
@@ -250,7 +251,7 @@ const Filter = () => {
               Clear All
             </button>
           </div>
-          {Object.entries(filters).map(([category, options]) => (
+          {Object.entries(filters)?.map(([category, options]) => (
             <div key={category} className="mb-3">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">{category}</h3>
@@ -262,7 +263,7 @@ const Filter = () => {
                 </button>
               </div>
               <div className="mt-6">
-                {options.slice(0, 5).map((option) => (
+                {options?.slice(0, 5)?.map((option) => (
                   <label
                     key={option}
                     className="flex items-center space-x-2 cursor-pointer py-1"

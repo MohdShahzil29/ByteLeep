@@ -209,16 +209,29 @@ export const getProblemInputBySlug = async (req, res) => {
 
 export const getAllTopicTagsController = async (req, res) => {
   try {
-    // Use the distinct method to retrieve all unique topic tags
-    const allTags = await DsaProblem.distinct("topicTags");
+    const redisKey = "allTopicTags";
+    // Check if data exists in Redis cache
+    const cachedTags = await redisClient.get(redisKey);
+    if (cachedTags) {
+      return res.status(200).json({
+        success: true,
+        message: "All topic tags retrieved from cache successfully",
+        allTags: JSON.parse(cachedTags),
+      });
+    }
 
-    res.status(200).send({
+    // Fetch from database if not in cache
+    const allTags = await DsaProblem.distinct("topicTags");
+    // Cache the result with an expiration time of 3600 seconds (1 hour)
+    await redisClient.set(redisKey, JSON.stringify(allTags), "EX", 3600);
+
+    res.status(200).json({
       success: true,
       message: "All topic tags retrieved successfully",
       allTags,
     });
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       success: false,
       message: "Error retrieving all topic tags",
       error: error.message,
@@ -226,23 +239,93 @@ export const getAllTopicTagsController = async (req, res) => {
   }
 };
 
-export const getDefficultyTags = async (req, res) => {
+export const getCompanyList = async (req, res) => {
   try {
-    const defficulty = await DsaProblem.distinct("difficulty");
+    const redisKey = "companyList";
+    const cachedCompanies = await redisClient.get(redisKey);
+    if (cachedCompanies) {
+      return res.status(200).json({
+        success: true,
+        message: "Company list retrieved from cache successfully",
+        companyList: JSON.parse(cachedCompanies),
+      });
+    }
 
-    res.status(200).send({
+    const companyList = await DsaProblem.distinct("companyTags");
+    await redisClient.set(redisKey, JSON.stringify(companyList), "EX", 3600);
+
+    res.status(200).json({
       success: true,
-      message: "All Diffculty tags retrieved successfully",
-      defficulty,
+      message: "Company list retrieved successfully",
+      companyList,
     });
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       success: false,
-      message: "Error retrieving all Diffculty tags",
+      message: "Error retrieving company list",
       error: error.message,
     });
   }
 };
+
+export const getDefficultyTags = async (req, res) => {
+  try {
+    const redisKey = "difficultyTags";
+    const cachedDifficulty = await redisClient.get(redisKey);
+    if (cachedDifficulty) {
+      return res.status(200).json({
+        success: true,
+        message: "Difficulty tags retrieved from cache successfully",
+        difficulty: JSON.parse(cachedDifficulty),
+      });
+    }
+
+    const difficulty = await DsaProblem.distinct("difficulty");
+    await redisClient.set(redisKey, JSON.stringify(difficulty), "EX", 3600);
+
+    res.status(200).json({
+      success: true,
+      message: "Difficulty tags retrieved successfully",
+      difficulty,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving difficulty tags",
+      error: error.message,
+    });
+  }
+};
+
+export const getFilteredProblems = async (req, res) => {
+  try {
+    // Retrieve filter query parameters (expected as comma-separated strings)
+    const { companies, topics, difficulty } = req.query;
+    let filter = {};
+
+    if (companies) {
+      // Example: companies=Amazon,Google
+      filter.companyTags = { $in: companies.split(",") };
+    }
+
+    if (topics) {
+      // Example: topics=Arrays,Linked%20List
+      filter.topicTags = { $in: topics.split(",") };
+    }
+
+    if (difficulty) {
+      // Example: difficulty=Easy,Medium
+      filter.difficulty = { $in: difficulty.split(",") };
+    }
+
+    const problems = await DsaProblem.find(filter);
+    return res.status(200).json({ success: true, problems });
+  } catch (error) {
+    console.error("Error fetching filtered problems:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Use word boundaries so that digits embedded in words are ignored.
 function extractNumbers(str) {
   return str.match(/\b\d+\b/g) || [];

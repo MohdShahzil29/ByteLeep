@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const DetailMockTest = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [details, setDetails] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -13,9 +14,9 @@ const DetailMockTest = () => {
   const [isCorrect, setIsCorrect] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
+  const [results, setResults] = useState([]);
 
-  // This ref flags when the saved progress has been fetched so that
-  // auto-save won’t fire with the default state.
+  // This ref flags when the saved progress has been fetched so that auto-save won’t fire with the default state.
   const progressFetched = useRef(false);
   // progressRef holds the latest progress values for use in beforeunload.
   const progressRef = useRef({
@@ -27,7 +28,7 @@ const DetailMockTest = () => {
   });
   const { token } = useSelector((state) => state.auth);
 
-  // Keep progressRef up to date with the latest state.
+  // Update progressRef with the latest state.
   useEffect(() => {
     progressRef.current = {
       currentQuestionIndex,
@@ -38,7 +39,7 @@ const DetailMockTest = () => {
     };
   }, [currentQuestionIndex, selectedOption, isSubmitted, isCorrect, attempts]);
 
-  // Fetch test details and saved progress
+  // Fetch test details and saved progress.
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -71,7 +72,7 @@ const DetailMockTest = () => {
     fetchDetails();
   }, [slug, token]);
 
-  // Timer countdown effect
+  // Timer countdown effect.
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
@@ -81,9 +82,8 @@ const DetailMockTest = () => {
     }
   }, [timer]);
 
-  // Auto-save effect with debounce
+  // Auto-save effect with debounce.
   useEffect(() => {
-    // Only run auto-save if progress has been fetched.
     if (!progressFetched.current) return;
 
     const saveProgress = async () => {
@@ -116,7 +116,7 @@ const DetailMockTest = () => {
     token,
   ]);
 
-  // Beforeunload effect: attach only once and use latest progress from progressRef
+  // Beforeunload effect: attach only once and use latest progress from progressRef.
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (!progressFetched.current) return;
@@ -164,6 +164,18 @@ const DetailMockTest = () => {
     }
   };
 
+  // Record the result for the current question.
+  const recordResult = () => {
+    setResults((prevResults) => {
+      const newResults = [...prevResults];
+      newResults[currentQuestionIndex] = {
+        correct: isCorrect,
+        attempts: attempts,
+      };
+      return newResults;
+    });
+  };
+
   const handleNext = () => {
     if (attempts >= 2 && !isCorrect) {
       alert(
@@ -171,12 +183,18 @@ const DetailMockTest = () => {
       );
       return;
     }
+    // Record result for the current question.
+    recordResult();
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
       setIsSubmitted(false);
       setIsCorrect(null);
       setAttempts(0);
+    } else {
+      // If this is the last question, record result and submit the test.
+      handleTestSubmit();
     }
   };
 
@@ -191,7 +209,10 @@ const DetailMockTest = () => {
   };
 
   const handleTestSubmit = () => {
-    alert("Test submitted!");
+    // Record the last question's result if it hasn’t been recorded.
+    recordResult();
+    // Navigate to the TestResult page, passing the results in state.
+    navigate("/test-result", { state: { results } });
   };
 
   const formatTime = (seconds) => {

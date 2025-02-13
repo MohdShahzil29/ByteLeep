@@ -15,6 +15,7 @@ import Details from "./pages/Details";
 import Assessment from "./pages/Assessment";
 import CoursePage from "./pages/CoursePage";
 import DetailMockTest from "./pages/DetailMockTest";
+import TestResult from "./pages/TestResult";
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
         <Route path="/mock-test" element={ <Assessment />} />
         <Route path="/course/:slug" element={<CoursePage />} />
         <Route path="/test/:slug" element={<DetailMockTest />} />
+        <Route path="/test-result" element={<TestResult />} />
       </Routes>
       <FloatingButton />
       {/* <Footer /> */}

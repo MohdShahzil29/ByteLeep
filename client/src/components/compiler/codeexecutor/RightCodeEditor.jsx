@@ -54,9 +54,9 @@ const RightCodeEditor = ({ selectedLanguage }) => {
               : currentLanguage.toLowerCase()}
           </span>
         </div>
-        <div className="p-4 flex-1 min-h-[200px]">
+        <div className="p-4 flex-1 min-h-[200px] ">
           <textarea
-            className="w-full h-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full  md:h-full lg:h-full h-[18rem] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 "
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Write your code here..."

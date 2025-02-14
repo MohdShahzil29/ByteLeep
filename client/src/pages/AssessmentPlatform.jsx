@@ -23,15 +23,17 @@ const AssessmentPlatform = () => {
         );
         setTests(response.data.tests);
 
-        // Fetch enrolled tests
-        fetchEnrolledTests();
+        // Fetch enrolled tests only if user is logged in
+        if (token) {
+          fetchEnrolledTests();
+        }
       } catch (error) {
         console.error("Error fetching tests:", error);
       }
     };
 
     fetchTests();
-  }, []);
+  }, [token]);
 
   // Fetch enrolled tests for the user
   const fetchEnrolledTests = async () => {
@@ -40,8 +42,6 @@ const AssessmentPlatform = () => {
         `${import.meta.env.VITE_BASE_URL}/mock-test/get-enrolled-tests`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Store enrolled tests in state as a lookup object
       const enrolledTestsMap = {};
       response.data.enrolledTests.forEach((test) => {
         enrolledTestsMap[test._id] = true;
@@ -67,12 +67,14 @@ const AssessmentPlatform = () => {
           console.error("Search API error:", error);
         }
       } else {
-        fetchEnrolledTests();
+        if (token) {
+          fetchEnrolledTests();
+        }
       }
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
+  }, [searchTerm, token]);
 
   // Enroll user in a test
   const enrollCourse = async (testId) => {
@@ -84,7 +86,7 @@ const AssessmentPlatform = () => {
       );
 
       if (response.data.success) {
-        await fetchEnrolledTests(); // Re-fetch enrolled tests
+        await fetchEnrolledTests();
         return true;
       }
       return false;
@@ -99,6 +101,12 @@ const AssessmentPlatform = () => {
 
   // Handle test start
   const handleStartTest = async (slug, testId) => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // If user is not enrolled, enroll them first
     if (!enrolledTests[testId]) {
       const enrollmentSuccess = await enrollCourse(testId);
       if (!enrollmentSuccess) {
@@ -107,6 +115,7 @@ const AssessmentPlatform = () => {
       }
     }
 
+    // Start the test after a countdown
     setIsLoading(true);
     setCountdown(5);
     const timerInterval = setInterval(() => {
@@ -165,7 +174,11 @@ const AssessmentPlatform = () => {
                 onClick={() => handleStartTest(test.slug, test._id)}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
               >
-                {enrolledTests[test._id] ? "Continue Test" : "Enroll Test"}
+                {!token
+                  ? "Login"
+                  : enrolledTests[test._id]
+                  ? "Continue Test"
+                  : "Enroll Test"}
               </button>
             </div>
           ))

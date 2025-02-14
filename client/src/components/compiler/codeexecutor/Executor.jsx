@@ -7,8 +7,8 @@ const Executor = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("Java");
 
   return (
-    <div>
-      <div className="flex justify-between">
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col md:flex-row flex-1">
         <LeftSidebar onLanguageSelect={setSelectedLanguage} />
         <RightCodeEditor selectedLanguage={selectedLanguage} />
       </div>

@@ -24,6 +24,11 @@ const themes = [
 
 const fontSizes = [12, 14, 16, 18, 20, 22, 24];
 
+// Helper function to consistently map language names for API requests and code templates
+const getLanguageKey = (lang) => {
+  return lang.name.toLowerCase() === "c++" ? "c_cpp" : lang.name.toLowerCase();
+};
+
 const CodeEditor = () => {
   const [language, setLanguage] = useState(languages[0]);
   const [code, setCode] = useState("");
@@ -32,6 +37,7 @@ const CodeEditor = () => {
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [userInput, setUserInput] = useState("");
   const [problemId, setProblemId] = useState(null);
   const [submissionQueue, setSubmissionQueue] = useState([]);
   const [passedCount, setPassedCount] = useState(0);
@@ -47,24 +53,22 @@ const CodeEditor = () => {
       try {
         const helloWorldCode = {
           java: `public class Main {
-      public static void main(String[] args) {
-          System.out.println("Hello, World!");
-      }
-  }`,
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`,
           python: `print("Hello, World!")`,
           c_cpp: `#include <iostream>
-  using namespace std;
+using namespace std;
 
-  int main() {
-      cout << "Hello, World!" << endl;
-      return 0;
-  }`,
+int main() {
+    cout << "Hello, World!" << endl;
+    return 0;
+}`,
         };
 
-        const languageKey =
-          language.name.toLowerCase() === "c++"
-            ? "c_cpp"
-            : language.name.toLowerCase();
+        // Use the helper function to get the proper key for code template
+        const languageKey = getLanguageKey(language);
         setCode(helloWorldCode[languageKey] || "");
 
         const response = await axios.get(
@@ -92,30 +96,15 @@ const CodeEditor = () => {
   const handleRunCode = async () => {
     setLoading(true);
     try {
-      const inputResponse = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/dsa/get-input/${slug}`
-      );
-      let inputData = inputResponse.data.input || "";
-
-      let pricesArray = [];
-      if (
-        Array.isArray(inputData) &&
-        inputData.length > 0 &&
-        inputData[0].prices
-      ) {
-        pricesArray = inputData[0].prices;
-      } else if (inputData.prices) {
-        pricesArray = inputData.prices;
-      }
-
-      const formattedInputData = pricesArray.join(" ");
+      const safeInput = userInput && userInput.trim() !== "" ? userInput : "0";
 
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/execute`,
         {
-          language: language.name.toLowerCase(),
+          // Use the helper function to pass the correct language identifier
+          language: getLanguageKey(language),
           code,
-          inputData: formattedInputData,
+          inputData: safeInput,
         }
       );
 
@@ -128,94 +117,10 @@ const CodeEditor = () => {
   };
 
   const handleSubmit = async () => {
-    const submissionId = Date.now();
-    setSubmissionQueue((prevQueue) => [
-      ...prevQueue,
-      { id: submissionId, status: "pending" },
-    ]);
-
-    setSubmissionMessage("Submission is in queue");
-
-    try {
-      // Remove input and output from the body
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/dsa/submit`,
-        {
-          slug,
-          language: language.name.toLowerCase(),
-          code,
-        }
-      );
-
-      const { passedCount, totalTestCases, results } = response.data;
-
-      const failedResult = results.find((result) => !result.passed);
-      if (failedResult) {
-        setOutput(`Test Case ${results.indexOf(failedResult) + 1}: Failed\n`);
-        setOutput(
-          (prevOutput) =>
-            prevOutput + `Error: ${failedResult.error || "Unknown error"}\n`
-        );
-        setOutput(
-          (prevOutput) =>
-            prevOutput + `Expected Output:\n${failedResult.expectedOutput}\n`
-        );
-        setOutput(
-          (prevOutput) => prevOutput + `Actual Output:\n${failedResult.output}`
-        );
-
-        setSubmissionQueue((prevQueue) =>
-          prevQueue.map((submission) =>
-            submission.id === submissionId
-              ? { ...submission, status: "failed" }
-              : submission
-          )
-        );
-
-        setSubmissionMessage("");
-        return;
-      }
-
-      const totalExecutionTime = results.reduce((sum, result) => {
-        const time = parseInt(result.executionTime);
-        return sum + (isNaN(time) ? 0 : time);
-      }, 0);
-      const averageExecutionTime = totalExecutionTime / results.length;
-
-      let resultMessage = `Submission Results:\n`;
-      resultMessage += `Test Cases Passed: ${passedCount} out of ${totalTestCases}\n`;
-      resultMessage += `Average Execution Time: ${averageExecutionTime.toFixed(
-        2
-      )}ms\n\n`;
-      setOutput(resultMessage);
-
-      setSubmissionQueue((prevQueue) =>
-        prevQueue.map((submission) =>
-          submission.id === submissionId
-            ? { ...submission, status: "completed" }
-            : submission
-        )
-      );
-
-      setPassedCount(passedCount);
-      setTotalTestCases(totalTestCases);
-      setTestCaseResults(results);
-      setSubmissionMessage("");
-    } catch (error) {
-      setOutput(
-        "Submission Failed: " + (error.response?.data?.error || error.message)
-      );
-
-      setSubmissionQueue((prevQueue) =>
-        prevQueue.map((submission) =>
-          submission.id === submissionId
-            ? { ...submission, status: "failed" }
-            : submission
-        )
-      );
-
-      setSubmissionMessage("");
-    }
+    alert(
+      "We're actively working on it—the test case feature will be introduced soon"
+    );
+    // Future test case submission logic can be added here.
   };
 
   return (
@@ -370,7 +275,7 @@ const CodeEditor = () => {
           Submit
         </button>
       </footer>
-      <div
+      {/* <div
         className={`submission-queue p-4 ${
           isDarkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"
         } shadow-md rounded-lg`}
@@ -428,7 +333,7 @@ const CodeEditor = () => {
               </ul>
             </div>
           )}
-      </div>
+      </div> */}
     </div>
   );
 };

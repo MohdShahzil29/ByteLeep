@@ -16,6 +16,9 @@ import Assessment from "./pages/Assessment";
 import CoursePage from "./pages/CoursePage";
 import DetailMockTest from "./pages/DetailMockTest";
 import TestResult from "./pages/TestResult";
+import About from "./components/navbarpage/About";
+import Contact from "./components/navbarpage/Contact";
+import Dashbord from "./components/dashbord/Dashbord";
 
 
 function App() {
@@ -37,6 +40,9 @@ function App() {
         <Route path="/course/:slug" element={<CoursePage />} />
         <Route path="/test/:slug" element={<DetailMockTest />} />
         <Route path="/test-result" element={<TestResult />} />
+        <Route path="/about-us" element={<About />} />
+        <Route path="/contact-us" element={<Contact />} />
+        <Route path="/dashboard" element={<Dashbord />} />
       </Routes>
       <FloatingButton />
       {/* <Footer /> */}

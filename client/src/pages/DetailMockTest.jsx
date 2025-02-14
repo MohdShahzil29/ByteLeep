@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 const DetailMockTest = () => {
   const { slug } = useParams();
@@ -15,10 +14,9 @@ const DetailMockTest = () => {
   const [attempts, setAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
   const [results, setResults] = useState([]);
+ 
 
-  // This ref flags when the saved progress has been fetched so that auto-save won’t fire with the default state.
   const progressFetched = useRef(false);
-  // progressRef holds the latest progress values for use in beforeunload.
   const progressRef = useRef({
     currentQuestionIndex: 0,
     selectedOption: null,

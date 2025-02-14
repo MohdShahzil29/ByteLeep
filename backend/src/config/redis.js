@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const redisClient = createClient({
-  url: "rediss://red-cunmgldumphs73bof3q0:Ox65cjLpZ33sAz86KL6HKnvy6sBSLxXl@oregon-redis.render.com:6379",
+  url: "redis://red-cunmgldumphs73bof3q0:6379",
 });
 
 // const redisClient = createClient({

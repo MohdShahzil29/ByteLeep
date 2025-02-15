@@ -12,6 +12,7 @@ import {
   getDefficultyTags,
   getFilteredProblems,
   getCompanyList,
+  relatedProblems,
 } from "../controller/dsaProblem.controller.js";
 import { isAdmin, authenticateUser } from "../middlewares/Auth.js";
 
@@ -35,5 +36,6 @@ router.get('/get-defficulty', getDefficultyTags)
 router.get('/company-list', getCompanyList)
 router.post("/submit", submitSolution);
 router.get("/problems", getFilteredProblems);
+router.get('/related-problem/:pid/:cid', relatedProblems)
 
 export default router;

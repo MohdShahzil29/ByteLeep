@@ -65,9 +65,9 @@ const RightCodeEditor = ({ selectedLanguage }) => {
         <div className="flex justify-end p-4 border-t">
           <button
             onClick={handleRun}
-            className="flex items-center px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            className="flex items-center px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 cursor-pointer"
           >
-            <FaPlay className="mr-2" />
+            <FaPlay className="mr-2 " />
             Run
           </button>
         </div>

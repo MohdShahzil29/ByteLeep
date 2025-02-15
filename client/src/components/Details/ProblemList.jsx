@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoBookmarkOutline } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
+import Loader from "../Loader";
 
 const ProblemList = () => {
   const [problems, setProblems] = useState([]);
   const [category, setCategory] = useState([]);
+  const [loading, setLoading] = useState(true); // loading state add karein
   const { slug } = useParams();
   const navigate = useNavigate();
 
@@ -19,12 +21,15 @@ const ProblemList = () => {
       setProblems(response.data.problems);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // data load hone ke baad loading ko false kar dein
     }
   };
 
   useEffect(() => {
     handleSubmit();
   }, []);
+
   const renderCompanies = (companyTags) => {
     if (!companyTags || companyTags.length === 0) return "";
     const displayed = companyTags.slice(0, 2);
@@ -33,6 +38,14 @@ const ProblemList = () => {
       ? `${displayed.join(", ")} +${extra}`
       : displayed.join(", ");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center mx-auto h-screen">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full p-4 h-[calc(100vh-100px)] overflow-y-auto">

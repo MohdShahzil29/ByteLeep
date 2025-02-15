@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const DetailMockTest = () => {
   const { slug } = useParams();
@@ -25,8 +26,6 @@ const DetailMockTest = () => {
     attempts: 0,
   });
   const { token } = useSelector((state) => state.auth);
-
-  // Update progressRef with the latest state.
   useEffect(() => {
     progressRef.current = {
       currentQuestionIndex,

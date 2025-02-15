@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import Spinner from "../components/Spinner";
+import Loader from "../components/Loader";
 
 const AssessmentPlatform = () => {
   const [tests, setTests] = useState([]);
@@ -17,7 +18,8 @@ const AssessmentPlatform = () => {
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        // Fetch all tests
+        // Set loading true before API call
+        setIsLoading(true);
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/mock-test/get-all-test`
         );
@@ -27,8 +29,11 @@ const AssessmentPlatform = () => {
         if (token) {
           fetchEnrolledTests();
         }
+        // Set loading false after data is loaded
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching tests:", error);
+        setIsLoading(false);
       }
     };
 
@@ -57,14 +62,17 @@ const AssessmentPlatform = () => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchTerm.trim()) {
         try {
+          setIsLoading(true);
           const response = await axios.get(
             `${
               import.meta.env.VITE_BASE_URL
             }/mock-test/search?query=${searchTerm}`
           );
           setTests(response.data.tests);
+          setIsLoading(false);
         } catch (error) {
           console.error("Search API error:", error);
+          setIsLoading(false);
         }
       } else {
         if (token) {
@@ -114,8 +122,6 @@ const AssessmentPlatform = () => {
         return;
       }
     }
-
-    // Start the test after a countdown
     setIsLoading(true);
     setCountdown(5);
     const timerInterval = setInterval(() => {

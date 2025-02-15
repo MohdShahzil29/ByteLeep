@@ -8,7 +8,7 @@ const redisClient = createClient({
 });
 
 // const redisClient = createClient({
-//   url: "redis://host:6379",
+//   url: "redis://localhost:6379",
 // });
 
 redisClient.on("error", (err) => console.error("Redis Client Error", err));

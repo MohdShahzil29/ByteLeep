@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
+// import Loader from "../Loader";
+import Spinner from "../Spinner";
 
 const Details = () => {
   const [data, setData] = useState(null);
+  const [relatedProblem, setRelatedProblem] = useState(null);
+  // console.log("Data of problem", relatedProblem);
   const { slug } = useParams();
+  const navigation = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,13 +25,36 @@ const Details = () => {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, [slug]);
 
+  const getRelatedProblem = async (pid, cid) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/dsa/related-problem/${pid}/${cid}`
+      );
+      setRelatedProblem(res.data.relatedProblem);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      data &&
+      data._id &&
+      Array.isArray(data.category) &&
+      data.category.length > 0
+    ) {
+      getRelatedProblem(data._id, data.category[0]);
+    }
+  }, [data]);
+
   if (!data) {
     return (
-      <div className="text-center py-10 text-gray-700 text-lg">Loading...</div>
+      <div className="text-center py-10 text-gray-700 text-lg">
+        <Spinner />
+      </div>
     );
   }
 
@@ -135,36 +163,44 @@ const Details = () => {
             <button className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition w-full sm:w-auto">
               Try more examples
             </button>
-            <button className="bg-yellow-500 text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition w-full sm:w-auto">
+            <button
+              className="bg-yellow-500 text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition w-full sm:w-auto"
+              onClick={() => navigation("/contact-us")}
+            >
               <FaExclamationTriangle /> Report An Issue
             </button>
           </div>
 
-          <p className="text-sm text-gray-500 mt-6">
+          <p
+            className="text-sm text-gray-500 mt-6"
+            onClick={() => navigation("/contact-us")}
+          >
             If you are facing any issues on this page, please let us know.
           </p>
 
-          {/* Related Problems Section */}
-          <div className="mt-10">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Related Problems
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-100 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-800">
-                  Binary Search
-                </h3>
-              </div>
-              <div className="p-4 bg-gray-100 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-800">Two Sum</h3>
-              </div>
-              <div className="p-4 bg-gray-100 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-800">
-                  Merge Intervals
-                </h3>
+            {/* Related Problems Section */}
+            <div className="mt-10">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Related Problems
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {relatedProblem && relatedProblem.length > 0 ? (
+                  relatedProblem.map((problem, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-gray-100 rounded-lg shadow cursor-pointer hover:bg-gray-200"
+                      onClick={() => navigation(`/problem/${problem.slug}`)}
+                    >
+                      <h3 className="text-lg font-medium text-gray-800">
+                        {problem.title}
+                      </h3>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-600">No related problems found.</p>
+                )}
               </div>
             </div>
-          </div>
         </div>
       </ResizableBox>
     </div>

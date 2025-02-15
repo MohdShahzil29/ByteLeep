@@ -326,7 +326,43 @@ export const getFilteredProblems = async (req, res) => {
   }
 };
 
-// Use word boundaries so that digits embedded in words are ignored.
+export const relatedProblems = async (req, res) => {
+  try {
+    const { pid, cid } = req.params;
+    const cacheKey = `relatedProblems:${pid}:${cid}`;
+
+    // Attempt to retrieve cached data
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).send({
+        success: true,
+        relatedProblem: JSON.parse(cachedData),
+      });
+    }
+    const relatedProblem = await DsaProblem.find({
+      category: cid,
+      _id: { $ne: pid },
+    })
+      .limit(3)
+      .populate("category");
+    await redisClient.set(cacheKey, JSON.stringify(relatedProblem), {
+      EX: 60, // time in seconds
+    });
+
+    res.status(200).send({
+      success: true,
+      relatedProblem,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({
+      success: false,
+      message: "Error while getting related problems",
+      error,
+    });
+  }
+};
+
 function extractNumbers(str) {
   return str.match(/\b\d+\b/g) || [];
 }

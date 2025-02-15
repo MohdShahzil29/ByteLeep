@@ -9,6 +9,7 @@ import {
   FaSun,
 } from "react-icons/fa";
 import * as esprima from "esprima";
+import SeoLayout from "../SeoLayout";
 
 const WebCodeEditor = () => {
   const [html, setHtml] = useState("<h1>Hello, World!</h1>");
@@ -16,7 +17,7 @@ const WebCodeEditor = () => {
   const [js, setJs] = useState("console.log('Hello from JavaScript!');");
   const [consoleOutput, setConsoleOutput] = useState("");
   const [srcDoc, setSrcDoc] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false); 
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleRunClick = () => {
     let errorMessage = "";
@@ -89,78 +90,85 @@ const WebCodeEditor = () => {
   };
 
   return (
-    <div
-      className={`flex flex-col min-h-screen p-4 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
-      }`}
-    >
-      <h1 className="text-2xl font-bold text-center">
-        Byte Leep Web Code Editor
-      </h1>
-
-      {/* Dark Mode Toggle Button */}
-      <button
-        onClick={toggleDarkMode}
-        className="mt-4 px-4 py-2 bg-blue-600 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-500 w-full md:w-auto mx-auto"
+    <>
+      <SeoLayout
+        title="Byte Leep Code Editor"
+        description="Practice and run HTML, CSS, and JavaScript in an interactive web code editor."
+        keywords="ByteLeep, code editor, HTML, CSS, JavaScript, programming"
+      />
+      <div
+        className={`flex flex-col min-h-screen p-4 ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+        }`}
       >
-        {isDarkMode ? <FaSun /> : <FaMoon />}
-        {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      </button>
+        <h1 className="text-2xl font-bold text-center">
+          Byte Leep Web Code Editor
+        </h1>
 
-      {/* Responsive Grid for Editors */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <Editor
-          language="HTML"
-          icon={<FaHtml5 />}
-          value={html}
-          onChange={setHtml}
-          isDarkMode={isDarkMode}
-        />
-        <Editor
-          language="CSS"
-          icon={<FaCss3Alt />}
-          value={css}
-          onChange={setCss}
-          isDarkMode={isDarkMode}
-        />
-        <Editor
-          language="JavaScript"
-          icon={<FaJs />}
-          value={js}
-          onChange={setJs}
-          isDarkMode={isDarkMode}
-        />
-      </div>
-
-      <button
-        onClick={handleRunClick}
-        className="mt-4 px-4 py-2 bg-green-600 rounded-lg flex items-center justify-center gap-2 hover:bg-green-500 w-full md:w-auto mx-auto"
-      >
-        <FaPlay /> Run
-      </button>
-
-      {/* Responsive Output Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <iframe
-          title="output"
-          srcDoc={srcDoc}
-          className="w-full h-60 md:h-96 border border-gray-700 rounded-lg"
-        ></iframe>
-
-        <div
-          className={`p-4 h-60 md:h-96 border rounded-lg overflow-auto ${
-            isDarkMode
-              ? "bg-black text-green-400 border-gray-700"
-              : "bg-gray-100 text-black border-gray-300"
-          }`}
+        {/* Dark Mode Toggle Button */}
+        <button
+          onClick={toggleDarkMode}
+          className="mt-4 px-4 py-2 bg-blue-600 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-500 w-full md:w-auto mx-auto cursor-pointer"
         >
-          <h2 className="text-lg flex items-center gap-2 mb-2">
-            <FaTerminal /> Console Output
-          </h2>
-          <pre className="whitespace-pre-wrap">{consoleOutput}</pre>
+          {isDarkMode ? <FaSun /> : <FaMoon />}
+          {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        </button>
+
+        {/* Responsive Grid for Editors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <Editor
+            language="HTML"
+            icon={<FaHtml5 />}
+            value={html}
+            onChange={setHtml}
+            isDarkMode={isDarkMode}
+          />
+          <Editor
+            language="CSS"
+            icon={<FaCss3Alt />}
+            value={css}
+            onChange={setCss}
+            isDarkMode={isDarkMode}
+          />
+          <Editor
+            language="JavaScript"
+            icon={<FaJs />}
+            value={js}
+            onChange={setJs}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <button
+          onClick={handleRunClick}
+          className="mt-4 px-4 py-2 bg-green-600 rounded-lg flex items-center justify-center gap-2 hover:bg-green-500 w-full md:w-auto mx-auto"
+        >
+          <FaPlay /> Run
+        </button>
+
+        {/* Responsive Output Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <iframe
+            title="output"
+            srcDoc={srcDoc}
+            className="w-full h-60 md:h-96 border border-gray-700 rounded-lg"
+          ></iframe>
+
+          <div
+            className={`p-4 h-60 md:h-96 border rounded-lg overflow-auto ${
+              isDarkMode
+                ? "bg-black text-green-400 border-gray-700"
+                : "bg-gray-100 text-black border-gray-300"
+            }`}
+          >
+            <h2 className="text-lg flex items-center gap-2 mb-2">
+              <FaTerminal /> Console Output
+            </h2>
+            <pre className="whitespace-pre-wrap">{consoleOutput}</pre>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

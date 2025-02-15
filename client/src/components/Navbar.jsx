@@ -21,13 +21,17 @@ const Navbar = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
+
+  const handelClick = () => {
+    navigate('/')
+  }
   
 
   return (
     <nav className="bg-[#FDF8EE] text-black">
       <div className="max-w-[90rem] mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <img src={mainLogo} alt="Logo" className="h-14 mr-4" />
+          <img src={mainLogo} alt="Logo" className="h-14 mr-4 cursor-pointer" onClick={handelClick}/>
         </div>
         <div className="hidden md:flex items-center">
           <a href="/" className="px-4 py-2 hover:text-purple-500">

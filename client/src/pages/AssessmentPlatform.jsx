@@ -4,6 +4,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import Spinner from "../components/Spinner";
 import Loader from "../components/Loader";
+import SeoLayout from "../components/SeoLayout";
 
 const AssessmentPlatform = () => {
   const [tests, setTests] = useState([]);
@@ -146,53 +147,60 @@ const AssessmentPlatform = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen text-gray-900 flex flex-col items-center justify-center p-6">
-      <div className="text-center max-w-4xl mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-          Get Ready for Your Next Online Assessment
-        </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-8">
-          Practice with our mock tests and ace your interviews
-        </p>
-        <input
-          type="text"
-          placeholder="Search for tests..."
-          className="w-full md:w-1/2 xl:w-1/3 p-3 rounded-lg border border-gray-300 mb-12 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+    <>
+      <SeoLayout
+        title="Assessment test page"
+        description="Practice with our mock tests and ace your interviews"
+        keywords="ByteLeep, Assessment, Interview, Problem"
+      />
+      <div className="bg-gray-50 min-h-screen text-gray-900 flex flex-col items-center justify-center p-6">
+        <div className="text-center max-w-4xl mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            Get Ready for Your Next Online Assessment
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 mb-8">
+            Practice with our mock tests and ace your interviews
+          </p>
+          <input
+            type="text"
+            placeholder="Search for tests..."
+            className="w-full md:w-1/2 xl:w-1/3 p-3 rounded-lg border border-gray-300 mb-12 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-      <div className="w-full max-w-5xl flex flex-col gap-4">
-        {tests.length > 0 ? (
-          tests.map((test) => (
-            <div
-              key={test._id}
-              className="w-full border-b border-gray-300 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
-            >
-              <div className="mb-4 sm:mb-0">
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {test.title}
-                </h3>
-                <p className="text-gray-600 mt-2">{test.description}</p>
-              </div>
-              <button
-                onClick={() => handleStartTest(test.slug, test._id)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
+        <div className="w-full max-w-5xl flex flex-col gap-4">
+          {tests.length > 0 ? (
+            tests.map((test) => (
+              <div
+                key={test._id}
+                className="w-full border-b border-gray-300 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
               >
-                {!token
-                  ? "Login"
-                  : enrolledTests[test._id]
-                  ? "Continue Test"
-                  : "Enroll Test"}
-              </button>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-600">No tests found.</p>
-        )}
+                <div className="mb-4 sm:mb-0">
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {test.title}
+                  </h3>
+                  <p className="text-gray-600 mt-2">{test.description}</p>
+                </div>
+                <button
+                  onClick={() => handleStartTest(test.slug, test._id)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
+                >
+                  {!token
+                    ? "Login"
+                    : enrolledTests[test._id]
+                    ? "Continue Test"
+                    : "Enroll Test"}
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-600">No tests found.</p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

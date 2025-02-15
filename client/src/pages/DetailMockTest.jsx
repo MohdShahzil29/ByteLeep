@@ -3,6 +3,7 @@ import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import SeoLayout from "../components/SeoLayout";
 
 const DetailMockTest = () => {
   const { slug } = useParams();
@@ -15,7 +16,6 @@ const DetailMockTest = () => {
   const [attempts, setAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
   const [results, setResults] = useState([]);
- 
 
   const progressFetched = useRef(false);
   const progressRef = useRef({
@@ -223,6 +223,13 @@ const DetailMockTest = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#FDF8EE] text-gray-800">
+      <SeoLayout
+        title={details.title || "Mock Test"}
+        description={details.description || "Attempt this mock test online"}
+        keywords={
+          details.keywords?.join(", ") || "mock test, online exam, quiz"
+        }
+      />
       <header className="bg-white shadow-md p-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{details.title}</h1>
         <div className="text-lg font-semibold text-red-500">

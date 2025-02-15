@@ -4,13 +4,15 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoBookmarkOutline } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../Loader";
+import SeoLayout from "../SeoLayout";
 
 const ProblemList = () => {
   const [problems, setProblems] = useState([]);
   const [category, setCategory] = useState([]);
-  const [loading, setLoading] = useState(true); // loading state add karein
+  const [loading, setLoading] = useState(true); 
   const { slug } = useParams();
   const navigate = useNavigate();
+  console.log("Problem", problems)
 
   const handleSubmit = async () => {
     try {
@@ -22,7 +24,7 @@ const ProblemList = () => {
     } catch (error) {
       console.log(error);
     } finally {
-      setLoading(false); // data load hone ke baad loading ko false kar dein
+      setLoading(false);
     }
   };
 
@@ -49,6 +51,11 @@ const ProblemList = () => {
 
   return (
     <div className="w-full p-4 h-[calc(100vh-100px)] overflow-y-auto">
+      <SeoLayout
+        title={`Problems in ${category?.name || "Loading..."}`}
+        description={`Explore ${category?.name} problems and enhance your coding skills.`}
+        keywords="coding problems, DSA, algorithms, problem-solving"
+      />
       <h2 className="text-2xl font-semibold mb-4">Problem List</h2>
       <div className="space-y-4">
         {problems.map((problem, index) => (

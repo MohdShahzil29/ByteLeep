@@ -1,6 +1,5 @@
 import DsaProblem from "../models/dsaproblem.models.js";
 import redisClient from "../config/redis.js";
-// import { validationResult } from "express-validator";
 import slugify from "slugify";
 
 import { exec } from "child_process";
@@ -299,22 +298,18 @@ export const getDefficultyTags = async (req, res) => {
 
 export const getFilteredProblems = async (req, res) => {
   try {
-    // Retrieve filter query parameters (expected as comma-separated strings)
     const { companies, topics, difficulty } = req.query;
     let filter = {};
 
     if (companies) {
-      // Example: companies=Amazon,Google
       filter.companyTags = { $in: companies.split(",") };
     }
 
     if (topics) {
-      // Example: topics=Arrays,Linked%20List
       filter.topicTags = { $in: topics.split(",") };
     }
 
     if (difficulty) {
-      // Example: difficulty=Easy,Medium
       filter.difficulty = { $in: difficulty.split(",") };
     }
 

@@ -9,9 +9,7 @@ import NewsLetter from '../components/NewsLetter'
 import Footer from "../components/Footer";
 import AptitudeTestBanner from "./AptitudeTestBanner";
 import AssessmentPlatform from "./AssessmentPlatform";
-import Warning from "../components/model/Warning";
 import PracticeHome from "../components/PracticeHome";
-import Spinner from "../components/Spinner";
 
 const webTechnologies = [
   { name: "JavaScript", icon: "FaJava" },
@@ -34,6 +32,7 @@ const roadmapItems = [
 const HomePage = () => {
   return (
     <div>
+      
       <HeroSection />
       {/* <FeatureSection /> */}
       <PracticeHome />

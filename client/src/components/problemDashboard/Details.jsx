@@ -6,11 +6,11 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 // import Loader from "../Loader";
 import Spinner from "../Spinner";
+import SeoLayout from "../SeoLayout";
 
 const Details = () => {
   const [data, setData] = useState(null);
   const [relatedProblem, setRelatedProblem] = useState(null);
-  // console.log("Data of problem", relatedProblem);
   const { slug } = useParams();
   const navigation = useNavigate();
 
@@ -60,6 +60,11 @@ const Details = () => {
 
   return (
     <div className="flex justify-center p-4">
+        <SeoLayout 
+        title={data.title ? `${data.title} | Byte Leep` : "Problem Details | Byte Leep"}
+        description={data.description || "Check out this problem on Byte Leep"}
+        keywords="DSA, Problem Solving, Byte Leep"
+      />
       <ResizableBox
         width={800}
         height={Infinity}

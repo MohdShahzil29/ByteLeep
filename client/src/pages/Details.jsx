@@ -30,17 +30,17 @@ const Details = () => {
     }
   };
 
-  // Re-fetch whenever filters change
+
   useEffect(() => {
     fetchFilteredProblems();
   }, [selectedFilters]);
 
   return (
     <div className="flex justify-between">
-      <Filter
+      {/* <Filter
         selectedFilters={selectedFilters}
         setSelectedFilters={setSelectedFilters}
-      />
+      /> */}
       <ProblemList
         problems={problems}
         setSelectedFilters={setSelectedFilters}

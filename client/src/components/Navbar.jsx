@@ -3,7 +3,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import mainLogo from "../assets/orignallogo.png";
-import { logoutUser } from "../redux/authSlice";
+import { logoutUser } from "../../src/redux/authSlice";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { authUser } from "../../redux/AuthSlice";
+import { authUser } from "../../redux/authSlice";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
